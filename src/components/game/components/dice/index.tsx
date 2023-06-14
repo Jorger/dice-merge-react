@@ -1,8 +1,8 @@
 import "./styles.css";
-import { DICE_NAMES, DiceState, SIZE_ITEM } from "../../utils/constants";
-import Icon from "../icon";
+import { DICE_NAMES, DiceState, SIZE_ITEM } from "../../../../utils/constants";
+import Icon from "../../../icon";
 import React from "react";
-import type { DiceStateType, TypeDice } from "../../interfaces";
+import type { DiceStateType, TypeDice } from "../../../../interfaces";
 
 interface DiceProps {
   type: TypeDice;
