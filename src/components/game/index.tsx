@@ -1,5 +1,5 @@
-import { GameWrapper, Grid } from "./components";
-import { initialGridData } from "./helpers";
+import { DragGrid, GameWrapper } from "./components";
+import { getDiceDrag, initialGridData, rotateDiceDrag } from "./helpers";
 import React, { useState } from "react";
 
 const Game = () => {
@@ -9,9 +9,23 @@ const Game = () => {
    */
   const [gridData] = useState(() => initialGridData());
 
+  /**
+   * Estado para el elemento que se está arrastrando (drag...)
+   */
+  const [diceDrag, setDiceDrag] = useState(() => getDiceDrag(gridData));
+
+  const handleRotate = () => {
+    setDiceDrag(rotateDiceDrag(diceDrag));
+  };
+
   return (
     <GameWrapper>
-      <Grid gridData={gridData} />
+      <DragGrid
+        diceDrag={diceDrag}
+        gridData={gridData}
+        onRotate={handleRotate}
+      />
+      {/* <Grid gridData={gridData} /> */}
     </GameWrapper>
   );
 };
