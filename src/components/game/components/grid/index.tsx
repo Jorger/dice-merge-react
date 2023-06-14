@@ -9,7 +9,7 @@ interface GridPops {
 }
 
 const Grid = ({ gridData }: GridPops) => {
-  console.log("GRID: gridData", gridData);
+  // console.log("GRID: gridData", gridData);
 
   return (
     <div className="grid-game" style={POSICION_BASE_GRID}>
