@@ -1,0 +1,222 @@
+.dice {
+  --dice-one: white;
+  --dice-two: #3dc1ff;
+  --dice-three: #fc81d7;
+  --dice-four: #fedf00;
+  --dice-five: #b570f8;
+  --dice-six: #e6504f;
+  --point: radial-gradient(circle, white 35%, rgba(255, 255, 255, 0) 50%);
+  --point-black: radial-gradient(circle, black 43%, rgba(255, 255, 255, 0) 50%);
+}
+
+.dice {
+  position: absolute;
+  border-radius: 5px;
+  border: 1px solid #472e17;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+  transition: all 140ms ease;
+  z-index: 2;
+}
+
+.dice.appear {
+  animation: bounceIn 1s both;
+  overflow: hidden;
+}
+
+.dice.appear::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.8),
+    rgba(255, 255, 255, 0) 70%
+  );
+  top: 0;
+  left: -100px;
+  animation: shine 3s linear;
+}
+
+.dice::after {
+  background-repeat: no-repeat;
+  background-size: 30% 30%;
+  content: "";
+  filter: drop-shadow(0 0 1px black);
+  height: 100%;
+  overflow: hidden;
+  position: absolute;
+  width: 100%;
+}
+
+/* Dado uno */
+.dice.one {
+  background-color: var(--dice-one);
+}
+
+.dice.one::after {
+  background-image: radial-gradient(
+      circle,
+      #f6597a 30%,
+      rgba(255, 255, 255, 0) 50%
+    ),
+    var(--point-black);
+  background-position: 50% 50%;
+}
+
+/* Dado dos */
+.dice.two {
+  background-color: var(--dice-two);
+}
+
+.dice.two::after {
+  background-image: var(--point), var(--point), var(--point-black),
+    var(--point-black);
+  background-position: 10% 10%, 90% 90%;
+}
+
+/* Dado tres */
+.dice.three {
+  background-color: var(--dice-three);
+}
+
+.dice.three::after {
+  background-image: var(--point), var(--point), var(--point), var(--point-black),
+    var(--point-black), var(--point-black);
+  background-position: 10% 10%, 50% 50%, 90% 90%;
+}
+
+/* Dado cuatro */
+.dice.four {
+  background-color: var(--dice-four);
+}
+
+.dice.four::after {
+  background-image: var(--point), var(--point), var(--point), var(--point),
+    var(--point-black), var(--point-black), var(--point-black),
+    var(--point-black);
+  background-position: 10% 90%, 10% 10%, 90% 10%, 90% 90%;
+}
+
+/* Dado cinco */
+.dice.five {
+  background-color: var(--dice-five);
+}
+
+.dice.five::after {
+  background-image: var(--point), var(--point), var(--point), var(--point),
+    var(--point), var(--point-black), var(--point-black), var(--point-black),
+    var(--point-black), var(--point-black);
+  background-position: 10% 90%, 10% 10%, 50% 50%, 90% 10%, 90% 90%;
+}
+
+/* Dado seis */
+.dice.six {
+  background-color: var(--dice-six);
+}
+
+.dice.six::after {
+  background-image: var(--point), var(--point), var(--point), var(--point),
+    var(--point), var(--point), var(--point-black), var(--point-black),
+    var(--point-black), var(--point-black), var(--point-black),
+    var(--point-black);
+  background-position: 10% 90%, 10% 10%, 10% 50%, 90% 10%, 90% 90%, 90% 50%;
+}
+
+/* Dado combinado */
+.dice.all {
+  background-color: #503532;
+}
+
+.dice.all::after {
+  background-image: linear-gradient(white, white),
+    linear-gradient(#ffdf00, #ffdf00), linear-gradient(#e6504f, #e6504f),
+    linear-gradient(#92e147, #92e147), linear-gradient(#3dc1ff, #3dc1ff),
+    linear-gradient(#e6504f, #e6504f), linear-gradient(#3dc1ff, #3dc1ff),
+    linear-gradient(white, white), linear-gradient(#b570f8, #b570f8);
+
+  background-size: 28% 28%;
+  background-position: 5% 5%, 50% 5%, 95% 5%, 5% 47%, 50% 47%, 95% 47%, 5% 90%,
+    50% 90%, 95% 90%;
+}
+
+/* Dado estrella */
+.dice.star {
+  align-items: center;
+  background: #6441a5;
+  background: linear-gradient(to top, #2a0845, #6441a5);
+  display: flex;
+  justify-content: center;
+}
+
+.dice.star .icon-wrapper {
+  filter: drop-shadow(3px 4px 2px rgba(0, 0, 0, 0.3));
+  width: 85%;
+}
+
+/* Estados de los dados */
+.dice.disapear {
+  animation: bounceOut 500ms both;
+}
+
+.dice.ghost {
+  filter: opacity(0.6);
+}
+
+.dice.hide {
+  opacity: 0;
+}
+
+.dice.shake {
+  animation: shake 0.7s infinite ease-in;
+}
+
+@keyframes shine {
+  0% {
+    left: -100px;
+  }
+  20% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translate(1px, 1px) rotate(0deg);
+  }
+  10% {
+    transform: translate(-1px, -2px) rotate(-1deg);
+  }
+  20% {
+    transform: translate(-2px, 0px) rotate(1deg);
+  }
+  20% {
+    transform: translate(2px, 2px) rotate(0deg);
+  }
+  40% {
+    transform: translate(1px, -1px) rotate(1deg);
+  }
+  50% {
+    transform: translate(-1px, 2px) rotate(-1deg);
+  }
+  60% {
+    transform: translate(-2px, 1px) rotate(0deg);
+  }
+  70% {
+    transform: translate(2px, 1px) rotate(-1deg);
+  }
+  80% {
+    transform: translate(-1px, -1px) rotate(1deg);
+  }
+  90% {
+    transform: translate(1px, 2px) rotate(0deg);
+  }
+  100% {
+    transform: translate(1px, -2px) rotate(-1deg);
+  }
+}

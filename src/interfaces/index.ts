@@ -1,4 +1,4 @@
-// import { TypeIcon } from "../components/icon";
+import { TypeIcon } from "../components/icon";
 import { DiceState, DragEvents, HELPS } from "../utils/constants";
 
 export type TypeDice = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
@@ -111,15 +111,15 @@ export interface SoundContextProps {
 
 export type TotalMaxHelps = Record<TypeHelps, number>;
 
-// export interface HelpsGameOptions {
-//   index: number;
-//   icon: TypeIcon;
-//   remaining: number;
-//   type: TypeHelps;
-//   selected: boolean;
-// }
+export interface HelpsGameOptions {
+  index: number;
+  icon: TypeIcon;
+  remaining: number;
+  type: TypeHelps;
+  selected: boolean;
+}
 
-// export type HelpsGame = Record<TypeHelps, HelpsGameOptions>;
+export type HelpsGame = Record<TypeHelps, HelpsGameOptions>;
 
 export interface UndoValues {
   score: {
