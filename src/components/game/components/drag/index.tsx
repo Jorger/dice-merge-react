@@ -9,17 +9,28 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import React from "react";
-import type { DiceDrag, GridType } from "../../../../interfaces";
+import type {
+  DiceDrag,
+  DragEventsType,
+  GridType,
+} from "../../../../interfaces";
+import { DragEvents } from "../../../../utils/constants";
 
 interface DragGridPops {
   gridData: GridType;
   diceDrag: DiceDrag;
   onRotate: () => void;
+  onDragEvent: (type: DragEventsType, over: string) => void;
 }
 
 const activationConstraint = { distance: 30 };
 
-const DragGrid = ({ gridData, diceDrag, onRotate }: DragGridPops) => {
+const DragGrid = ({
+  gridData,
+  diceDrag,
+  onRotate,
+  onDragEvent,
+}: DragGridPops) => {
   const mouseSensor = useSensor(MouseSensor, { activationConstraint });
   const touchSensor = useSensor(TouchSensor, { activationConstraint });
   const sensors = useSensors(mouseSensor, touchSensor);
@@ -27,12 +38,12 @@ const DragGrid = ({ gridData, diceDrag, onRotate }: DragGridPops) => {
   return (
     <DndContext
       modifiers={[restrictToParentElement, snapTopCursor]}
-      onDragOver={({ over }) => {
-        console.log("onDragOver", over);
-      }}
-      onDragEnd={({ over }) => {
-        console.log("onDragEnd", over);
-      }}
+      onDragOver={({ over }) =>
+        onDragEvent(DragEvents.OVER, (over?.id as string) || "")
+      }
+      onDragEnd={({ over }) =>
+        over?.id && onDragEvent(DragEvents.END, over?.id as string)
+      }
       sensors={sensors}
     >
       <Grid gridData={gridData} />
