@@ -1,6 +1,8 @@
 import {
   DICES_VALUES,
   DIMENSION_GRID,
+  DiceState,
+  DragEvents,
   // DiceState,
   MAX_VALUE_DICE,
   MIN_VALUE_DICE,
@@ -10,9 +12,11 @@ import {
 } from "../../utils/constants";
 import type {
   DiceDrag,
+  DragEventsType,
   GridItemType,
   GridType,
   Neighbors,
+  RenderDices,
   TypeDice,
   TypeOrientation,
 } from "../../interfaces";
@@ -151,6 +155,83 @@ const getRandomDieFromArray = (dices: TypeDice[]) =>
   dices[randomNumber(0, dices.length - 1)];
 
 /**
+ * Función que evalua si es posible ubicar los dados en la grilla
+ * En este caso valida tanto para un dado como para dos
+ * Si la validación es satisfactoria, devuevle la información del dado a renderizar
+ * en este caso el tipo, fila, columna y posición...
+ * @param gridData
+ * @param diceDrag
+ * @param diceOneRow
+ * @param diceOneCol
+ * @returns
+ */
+const validatePositionDices = (
+  gridData: GridType,
+  diceDrag: DiceDrag,
+  diceOneRow: number,
+  diceOneCol: number
+) => {
+  const { dices, typeOrientation, orientation } = diceDrag;
+  const renderDices: RenderDices[] = [];
+
+  /**
+   * Si es de tipo single se podrá poner en la grilla,
+   * ya que si existió el over es que estaba libre,
+   * pero so es MULTIPLE se debe evaluar el dado dos y su posición.
+   */
+  let setDiceOnGrid = typeOrientation === "SINGLE";
+
+  // Para indicar el valor del dado uno por defecto
+  // Si es uno sólo, por efecto será la posición cero...
+  const diceOneIndex =
+    typeOrientation === "SINGLE"
+      ? 0
+      : orientation === 0 || orientation === 1
+      ? 0
+      : 1;
+
+  // Se almacena la información del dado uno...
+  renderDices.push({
+    type: dices[diceOneIndex],
+    x: gridData[diceOneRow][diceOneCol].x,
+    y: gridData[diceOneRow][diceOneCol].y,
+    row: diceOneRow,
+    col: diceOneCol,
+  });
+
+  // Es de tipo múltiple así que se debe evaluar el dado dos...
+  if (typeOrientation === "MULTIPLE") {
+    // Dependiendo de la orietación se valida al posición que se debe evaluar del vecino...
+    const positionNeighbor =
+      orientation === 0 || orientation === 2 ? "BOTTOM" : "LEFT";
+
+    // Se obtiene los vecinos...
+    const neighbors = getNeighbors(gridData, diceOneRow, diceOneCol);
+
+    console.log("neighbors", neighbors);
+
+    // Se valida si existe el vecino y que además no exista un dado esa posición...
+    if (neighbors[positionNeighbor] && !neighbors[positionNeighbor].dice) {
+      // Se obtiene el índice del dado en el vector de dados que se están arrastrando...
+      const diceTwoIndex = orientation === 0 || orientation === 1 ? 1 : 0;
+
+      // Se almacena la información del dado dos...
+      renderDices.push({
+        type: dices[diceTwoIndex],
+        x: neighbors[positionNeighbor].x,
+        y: neighbors[positionNeighbor].y,
+        row: neighbors[positionNeighbor].row,
+        col: neighbors[positionNeighbor].col,
+      });
+
+      setDiceOnGrid = true;
+    }
+  }
+
+  return setDiceOnGrid ? renderDices : [];
+};
+
+/**
  * Función que crea la data inicial de la grilla
  * @returns
  */
@@ -215,7 +296,8 @@ export const getDiceDrag = (gridData: GridType): DiceDrag => {
     .filter((v) => v.total !== 0);
 
   // Se obtiene aleatoriamente el número de dados que se van a arrastrar...
-  let total = randomNumber(1, 2);
+  // let total = randomNumber(1, 2);
+  let total = 2;
 
   /**
    * Determina si se selecciona de los dados que están en la
@@ -304,4 +386,85 @@ export const rotateDiceDrag = (diceDrag: DiceDrag) => {
     copyDiceDrag.orientation + 1 === 4 ? 0 : copyDiceDrag.orientation + 1;
 
   return copyDiceDrag;
+};
+
+interface PutDiceOnGrid {
+  diceDrag: DiceDrag;
+  gridData: GridType;
+  over: string;
+  typeEvent: DragEventsType;
+  setDiceDrag: React.Dispatch<React.SetStateAction<DiceDrag>>;
+  setGridData: React.Dispatch<React.SetStateAction<GridType>>;
+}
+
+export const putDiceOnGrid = ({
+  diceDrag,
+  gridData,
+  over,
+  typeEvent,
+  setDiceDrag,
+  setGridData,
+}: PutDiceOnGrid) => {
+  const copyGridData = cloneDeep(gridData);
+  let updateGrid = false;
+
+  // Hacer un proceso de limpieza de los elementos que no sean de tipo VISIBLE...
+  for (let i = 0; i < copyGridData.length; i++) {
+    for (let c = 0; c < copyGridData[i].length; c++) {
+      if (
+        copyGridData[i][c]?.dice?.state &&
+        copyGridData[i][c]?.dice?.state !== DiceState.VISIBLE
+      ) {
+        const state = copyGridData[i][c]?.dice?.state;
+        // Si es ghost o hide, se elimina el dado de la grilla...
+        if (state === DiceState.GHOST || state === DiceState.HIDE) {
+          copyGridData[i][c].dice = undefined;
+        } else {
+          // Si es por ejemplo de tipo APPEAR, lo deja visible
+          // APPEAR es para una animación...
+          copyGridData[i][c].dice!.state = DiceState.VISIBLE;
+        }
+
+        if (!updateGrid) {
+          updateGrid = true;
+        }
+      }
+    }
+  }
+
+  if (over !== "") {
+    const [diceOneRow, diceOneCol] = over.split("-").map((v) => +v);
+
+    const dices = validatePositionDices(
+      copyGridData,
+      diceDrag,
+      diceOneRow,
+      diceOneCol
+    );
+
+    if (dices.length !== 0) {
+      for (let { row, col, type } of dices) {
+        // TODO: Se validará el dado estrella...
+        const typeDice = type;
+
+        copyGridData[row][col].dice = {
+          type: typeDice,
+          state: DiceState[typeEvent === DragEvents.END ? "VISIBLE" : "GHOST"],
+          x: copyGridData[row][col].x,
+          y: copyGridData[row][col].y,
+        };
+      }
+
+      if (!updateGrid) {
+        updateGrid = true;
+      }
+    }
+    // console.log({ diceOneRow, diceOneCol, dices });
+  }
+
+  if (updateGrid) {
+    setGridData(copyGridData);
+  }
+
+  // console.log({ typeEvent, over });
 };
