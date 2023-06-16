@@ -3,9 +3,9 @@ import {
   DIMENSION_GRID,
   DiceState,
   DragEvents,
-  // DiceState,
   MAX_VALUE_DICE,
   MIN_VALUE_DICE,
+  MIN_VALUE_MERGE,
   NEIGHBOR_POSITIONS,
   OFFSET_ITEM,
   SIZE_ITEM,
@@ -208,7 +208,7 @@ const validatePositionDices = (
     // Se obtiene los vecinos...
     const neighbors = getNeighbors(gridData, diceOneRow, diceOneCol);
 
-    console.log("neighbors", neighbors);
+    // console.log("neighbors", neighbors);
 
     // Se valida si existe el vecino y que además no exista un dado esa posición...
     if (neighbors[positionNeighbor] && !neighbors[positionNeighbor].dice) {
@@ -229,6 +229,108 @@ const validatePositionDices = (
   }
 
   return setDiceOnGrid ? renderDices : [];
+};
+
+interface NeighborsMerge {
+  row: number;
+  col: number;
+  index: number;
+}
+
+/**
+ * Función que valida los elementos que se podrían unir
+ * En este caso se hace una llamada recursiva la cual trae los elementos que sean del mismo
+ * tipo, del valor pasado a la función (valor obtenido de la fila y columna)
+ * validatedIndexes persiste los valores que ya se han evaluado...
+ * @param gridData
+ * @param row
+ * @param col
+ * @param type
+ * @param validatedIndexes
+ * @returns
+ */
+const validateNeighborsMerge = (
+  gridData: GridType,
+  row: number,
+  col: number,
+  type: TypeDice,
+  validatedIndexes: number[] = []
+) => {
+  // Guarda la información de los vecinos que se deben unnir...
+  const neighborsMerge: NeighborsMerge[] = [];
+  const { index } = gridData[row][col];
+
+  // Validar si el index ya se encuentra en los valores validados...
+  // Si es así no se evalúa nada...
+  if (validatedIndexes.includes(index)) {
+    return [];
+  }
+
+  // Se obtiene los vecinos para el dado que se está evaluando...
+  const neighbors = getNeighbors(gridData, row, col);
+
+  // Guardará los demás vecinos...
+  let newNeighborsMerge: NeighborsMerge[] = [];
+
+  // Se itera cada uno de los vecinos que tiene el elemento evaluado
+  // en cada una de las direcciones que tenga...
+  for (let direction in neighbors) {
+    const {
+      dice: diceNeighbor,
+      row: rowNeighbor,
+      col: colNeighbor,
+      index: indexNeighbor,
+    } = neighbors[direction];
+
+    // Buscar si el elemento ya se encuentra entre los vecinos encontrados antes...
+    const existNeighbor =
+      newNeighborsMerge.findIndex((v) => v.index === indexNeighbor) >= 0;
+
+    /**
+     * Se avlua el vecino si:
+     * No se había evaluado antes.
+     * Exista un dado y el estado del mismo sea de tipo VISIBLE.
+     * Además que el dado sea del mismo tipo
+     * TODO: ó que sea de tipo especial (8) Dado estrella...
+     * Los valores de los indices evaluados anteriormete
+     * no se encuentre en validatedIndexes
+     */
+    if (
+      !existNeighbor &&
+      diceNeighbor &&
+      diceNeighbor.state === DiceState.VISIBLE &&
+      diceNeighbor.type === type &&
+      !validatedIndexes.includes(indexNeighbor)
+    ) {
+      // debugger;
+      // Se guarda el nuevo vecino...
+      neighborsMerge.push({
+        row: rowNeighbor,
+        col: colNeighbor,
+        index: indexNeighbor,
+      });
+
+      // Recursivamente se evalua si el nuevo vecino, tiene vecinos adicionales...
+      const newData = validateNeighborsMerge(
+        gridData,
+        rowNeighbor,
+        colNeighbor,
+        type,
+        [...validatedIndexes, index]
+      );
+
+      // Se une la información de los vecinos anterioes, con los nuevos vecinos...
+      newNeighborsMerge = [...newNeighborsMerge, ...newData];
+    }
+  }
+
+  /**
+   * Se une la información de los vecinos obtenidos para el ítem evaluado en la función
+   * con la información de los demás vecinos...
+   */
+  const finalMerge = [...neighborsMerge, ...newNeighborsMerge];
+
+  return finalMerge;
 };
 
 /**
@@ -254,12 +356,15 @@ export const initialGridData = () => {
         size: SIZE_ITEM,
         x,
         y,
-        // dice: {
-        //   type: randomNumber(1, 6) as TypeDice,
-        //   state: DiceState.VISIBLE,
-        //   x,
-        //   y,
-        // },
+        dice:
+          i === 0 || c === 0
+            ? {
+                type: 5,
+                state: DiceState.VISIBLE,
+                x,
+                y,
+              }
+            : undefined,
       };
 
       index++;
@@ -297,7 +402,7 @@ export const getDiceDrag = (gridData: GridType): DiceDrag => {
 
   // Se obtiene aleatoriamente el número de dados que se van a arrastrar...
   // let total = randomNumber(1, 2);
-  let total = 2;
+  let total = 1;
 
   /**
    * Determina si se selecciona de los dados que están en la
@@ -343,7 +448,8 @@ export const getDiceDrag = (gridData: GridType): DiceDrag => {
    * Se obtiene el valor del primer dado que siempre debe estar,
    * el valor obtenido depende de los valores disponibles en dicePick
    */
-  const dices = [getRandomDieFromArray(dicePick)];
+  // const dices = [getRandomDieFromArray(dicePick)];
+  const dices = [5 as TypeDice];
 
   /**
    * Se obtiene el otro valor del dado, si el total era dos
@@ -443,20 +549,61 @@ export const putDiceOnGrid = ({
     );
 
     if (dices.length !== 0) {
+      // Se itera los dados que se han puesto en la grilla...
       for (let { row, col, type } of dices) {
         // TODO: Se validará el dado estrella...
         const typeDice = type;
 
+        // Si la acción es que se ha puesto el dado en la grilla
+        // el tipo del dado será visible, si no será ghost...
         copyGridData[row][col].dice = {
           type: typeDice,
           state: DiceState[typeEvent === DragEvents.END ? "VISIBLE" : "GHOST"],
           x: copyGridData[row][col].x,
           y: copyGridData[row][col].y,
         };
+
+        /**
+         * Si la acción es over, se buscan los posibles elementos
+         * con los que cada dado podría hacer merge
+         */
+        if (typeEvent === DragEvents.OVER) {
+          const neighborsMerge = validateNeighborsMerge(
+            copyGridData,
+            row,
+            col,
+            typeDice
+          );
+
+          /**
+           * Se valida que el valor de elementos a hacer merger sea mayor o igual que 3
+           * en este caso sería dos, por que sería el valor evaluado y dos o más adicionales...
+           * el elemento actual no se encuetra entre los vecinos...
+           */
+          if (neighborsMerge.length >= MIN_VALUE_MERGE - 1) {
+            /**
+             * Se itrea cada uno de los posibles elementos a hacer merge
+             * y se le establece la clase SHAKE...
+             */
+            for (let neighbors of neighborsMerge) {
+              copyGridData[neighbors.row][neighbors.col].dice!.state =
+                DiceState.SHAKE;
+            }
+          }
+        }
       }
 
       if (!updateGrid) {
         updateGrid = true;
+      }
+
+      if (typeEvent === DragEvents.END) {
+        console.log("EVALUAR END");
+
+        const copyDiceDrag = cloneDeep(diceDrag);
+        copyDiceDrag.isVisible = false;
+        copyDiceDrag.dropDices = dices;
+        setDiceDrag(copyDiceDrag);
       }
     }
     // console.log({ diceOneRow, diceOneCol, dices });
