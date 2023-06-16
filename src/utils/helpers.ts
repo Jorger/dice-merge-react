@@ -20,3 +20,11 @@ export const debounce = (fn: Function, delay: number) => {
  */
 export const randomNumber = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
+
+/**
+ * Establece una interrupción...
+ * @param ms
+ * @returns
+ */
+export const delay = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));

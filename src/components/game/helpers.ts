@@ -356,15 +356,15 @@ export const initialGridData = () => {
         size: SIZE_ITEM,
         x,
         y,
-        dice:
-          i === 0 || c === 0
-            ? {
-                type: 5,
-                state: DiceState.VISIBLE,
-                x,
-                y,
-              }
-            : undefined,
+        // dice:
+        //   i === 0 || c === 0
+        //     ? {
+        //         type: 5,
+        //         state: DiceState.VISIBLE,
+        //         x,
+        //         y,
+        //       }
+        //     : undefined,
       };
 
       index++;
@@ -401,8 +401,8 @@ export const getDiceDrag = (gridData: GridType): DiceDrag => {
     .filter((v) => v.total !== 0);
 
   // Se obtiene aleatoriamente el número de dados que se van a arrastrar...
-  // let total = randomNumber(1, 2);
-  let total = 1;
+  let total = randomNumber(1, 2);
+  // let total = 2;
 
   /**
    * Determina si se selecciona de los dados que están en la
@@ -448,8 +448,8 @@ export const getDiceDrag = (gridData: GridType): DiceDrag => {
    * Se obtiene el valor del primer dado que siempre debe estar,
    * el valor obtenido depende de los valores disponibles en dicePick
    */
-  // const dices = [getRandomDieFromArray(dicePick)];
-  const dices = [5 as TypeDice];
+  const dices = [getRandomDieFromArray(dicePick)];
+  // const dices = [5 as TypeDice];
 
   /**
    * Se obtiene el otro valor del dado, si el total era dos
@@ -614,4 +614,148 @@ export const putDiceOnGrid = ({
   }
 
   // console.log({ typeEvent, over });
+};
+
+interface ValidateMergeDice {
+  gridData: GridType;
+  diceDrag: DiceDrag;
+}
+
+export const validateMergeDice = ({
+  gridData,
+  diceDrag,
+}: ValidateMergeDice) => {
+  const copyDiceDrag = cloneDeep(diceDrag);
+  const copyGridData = cloneDeep(gridData);
+
+  let existsMerge = false;
+
+  console.log("diceDrag", diceDrag.dropDices);
+
+  if (copyDiceDrag?.dropDices) {
+    /**
+     * Se debe trae los que se unen,
+     * primero se busca el menor (si es que hay dos)
+     * Se ordenan los valores de los dados que se han puesto en el board
+     * de menor a mayor, de esta manera simpre se evalúa el valor menor
+     */
+    const diceSorted = copyDiceDrag.dropDices.sort((a, b) => a.type - b.type);
+
+    // console.log("diceSorted", diceSorted);
+
+    // Se iteran los dados puestos en el board, mínimo uno, máximo dos...
+    for (let i = 0; i < diceSorted.length; i++) {
+      const { row: diceRow = 0, col: diceCol = 0, type } = diceSorted[i];
+
+      if (
+        copyGridData[diceRow][diceCol].dice &&
+        type >= MIN_VALUE_DICE &&
+        type <= MAX_VALUE_DICE
+      ) {
+        console.log("diceSorted", i, diceSorted[i]);
+        // TODO: Validar el dado tipo estrella...
+        let typeDice = type;
+        /**
+         * Se trae los posibles elementos para hacer merge
+         */
+        const neighborsMerge = validateNeighborsMerge(
+          copyGridData,
+          diceRow,
+          diceCol,
+          typeDice
+        );
+
+        console.log({ typeDice }, "neighborsMerge", neighborsMerge);
+
+        if (neighborsMerge.length >= MIN_VALUE_MERGE - 1) {
+          // Se debe mutar la grilla...
+          existsMerge = true;
+
+          /**
+           * Se itera los vecinos y se le establece el tipo HIDE,
+           * se cambia la posición del dado, para que la animación muestre que los
+           * dados se van a la posición del elemento evaluado...
+           */
+          for (let neighbors of neighborsMerge) {
+            copyGridData[neighbors.row][neighbors.col].dice!.state =
+              DiceState.HIDE;
+            copyGridData[neighbors.row][neighbors.col].dice!.x =
+              diceSorted[i].x;
+            copyGridData[neighbors.row][neighbors.col].dice!.y =
+              diceSorted[i].y;
+          }
+
+          // TODO: Evaluar el dado tipo estrella...
+          if (typeDice + 1 <= 7) {
+            // TODO: Evaluar el dado tipo estrella...
+            const newDiceType = (typeDice + 1) as TypeDice;
+            // Se le establece una clase para que se muestre
+            copyGridData[diceRow][diceCol].dice.state = DiceState.APPEAR;
+            // Se incrementa el valor evaluado...
+            copyGridData[diceRow][diceCol].dice.type = newDiceType;
+
+            /**
+             * Se incrementa el valor del ítem que se había arrastrando,
+             * por ejemplo si el valor del dado era 2, pasa a 3
+             * esto con el fin de actualizar el valor y así hacer otra validación de merge
+             */
+            copyDiceDrag.dropDices[i].type = newDiceType;
+            // Se incrementa el total de merges que se han lanzado en el mismo lanzamiento...
+            copyDiceDrag.totalMerges++;
+          } else {
+            copyGridData[diceRow][diceCol].dice.state = DiceState.DISAPEAR;
+            // TODO: validar el score...
+          }
+
+          break;
+        }
+      }
+    }
+  }
+
+  return {
+    existsMerge,
+    copyGridData,
+    copyDiceDrag,
+  };
+};
+
+/**
+ * Función que limpia la grilla de estados de los dados..
+ * @param gridData
+ * @returns
+ */
+export const clearGrid = (gridData: GridType) => {
+  const copyGridData = cloneDeep(gridData);
+
+  let isLastDiceMerge = false;
+
+  /**
+   * Se eliminan los dados de la grilla
+   * sólo si tienen los estados HIDE y DISAPEAR
+   */
+  for (let i = 0; i < copyGridData.length; i++) {
+    for (let c = 0; c < copyGridData[i].length; c++) {
+      const dice = copyGridData[i][c]?.dice;
+
+      if (dice?.state) {
+        const { state, type } = dice;
+
+        if (state === DiceState.HIDE || state === DiceState.DISAPEAR) {
+          if (!isLastDiceMerge && type === 7 && state === DiceState.DISAPEAR) {
+            isLastDiceMerge = true;
+          }
+
+          copyGridData[i][c].dice = undefined;
+        }
+      }
+    }
+  }
+
+  /**
+   * Se valida si con la nueva grilla hay espacio para poner algún dado...
+   */
+  const isASpaceAvailable = getTotalSpaceAvailable(copyGridData) !== 0;
+
+  return { copyGridData, isASpaceAvailable, isLastDiceMerge };
 };
