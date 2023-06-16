@@ -26,6 +26,7 @@ const GridItem = ({ item }: GridItemProps) => {
         top: item.y,
       }}
     >
+      {item.index}
       {item.dice && item.dice.state === DiceState.GHOST && (
         <Dice state={DiceState.GHOST} type={item.dice.type} />
       )}
