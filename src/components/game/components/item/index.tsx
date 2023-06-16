@@ -18,7 +18,6 @@ const GridItem = ({ item }: GridItemProps) => {
     <div
       ref={setNodeRef}
       style={{
-        // border: isOver ? "2px solid red" : "none",
         position: "absolute",
         width: item.size,
         height: item.size,
@@ -26,7 +25,6 @@ const GridItem = ({ item }: GridItemProps) => {
         top: item.y,
       }}
     >
-      {item.index}
       {item.dice && item.dice.state === DiceState.GHOST && (
         <Dice state={DiceState.GHOST} type={item.dice.type} />
       )}
