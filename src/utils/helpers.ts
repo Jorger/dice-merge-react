@@ -28,3 +28,17 @@ export const randomNumber = (min: number, max: number) =>
  */
 export const delay = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Valida si un string es un JSON valido...
+ * @param json
+ * @returns
+ */
+export const isValidJson = (json: string): boolean => {
+  try {
+    JSON.parse(json);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};

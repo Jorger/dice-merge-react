@@ -4,9 +4,11 @@ import { DragGrid, GameWrapper } from "./components";
 import {
   clearGrid,
   getDiceDrag,
+  getInitialDragData,
   initialGridData,
   putDiceOnGrid,
   rotateDiceDrag,
+  updateGameStateCache,
   validateMergeDice,
 } from "./helpers";
 import React, { useEffect, useState } from "react";
@@ -21,7 +23,7 @@ const Game = () => {
   /**
    * Estado para el elemento que se está arrastrando (drag...)
    */
-  const [diceDrag, setDiceDrag] = useState(() => getDiceDrag(gridData));
+  const [diceDrag, setDiceDrag] = useState(() => getInitialDragData(gridData));
 
   useEffect(() => {
     if (!diceDrag.isVisible) {
@@ -30,8 +32,6 @@ const Game = () => {
           gridData,
           diceDrag,
         });
-
-        console.log({ existsMerge });
 
         await delay(existsMerge ? 300 : 100);
 
@@ -43,16 +43,19 @@ const Game = () => {
             isLastDiceMerge,
           } = clearGrid(gridData);
 
-          console.log({ isASpaceAvailable, isLastDiceMerge });
-
           if (isLastDiceMerge) {
             await delay(500);
           }
 
+          // Se valida si hay espacio en el board...
           if (isASpaceAvailable) {
+            // Si es así se establecen los nuevos valores
             const newDiceDrag = getDiceDrag(newGridData);
             setDiceDrag(newDiceDrag);
             setGridData(newGridData);
+
+            // Se debe guardar la data en localstorage...
+            updateGameStateCache(newGridData, newDiceDrag);
           } else {
             console.log("NO HAY ESPACIO DISPONIBLE, GAME OVER");
           }

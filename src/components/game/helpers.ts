@@ -12,6 +12,7 @@ import {
 } from "../../utils/constants";
 import type {
   DiceDrag,
+  DiceGrid,
   DragEventsType,
   GridItemType,
   GridType,
@@ -22,6 +23,11 @@ import type {
 } from "../../interfaces";
 import { randomNumber } from "../../utils/helpers";
 import cloneDeep from "lodash.clonedeep";
+import {
+  getValueFromCache,
+  saveMultiplePropierties,
+  savePropierties,
+} from "../../utils/storage";
 
 /**
  * Función que devuelve cuantos slots están disponibles...
@@ -334,11 +340,65 @@ const validateNeighborsMerge = (
 };
 
 /**
+ * Dada la grilla, genera un objeto con los elementos que estén activos
+ * útil para localstorage y para el undo del juego..
+ * @param gridData
+ * @returns
+ */
+const convertGridHashTable = (gridData: GridType) => {
+  const grid: Record<string, number> = {};
+
+  for (let i = 0; i < gridData.length; i++) {
+    for (let c = 0; c < gridData[i].length; c++) {
+      const state = gridData[i][c].dice && gridData[i][c].dice?.state;
+
+      if (
+        state === DiceState.VISIBLE ||
+        state === DiceState.SHAKE ||
+        state === DiceState.APPEAR
+      ) {
+        grid[`${i}-${c}`] = gridData[i][c].dice?.type || 0;
+      }
+    }
+  }
+
+  return grid;
+};
+
+/**
+ * Valida si los valores de la grilla almacenada son válidos...
+ * @param cachedGrid
+ * @returns
+ */
+const validateCachedGrid = (cachedGrid: Record<string, number> = {}) => {
+  try {
+    for (let key in cachedGrid) {
+      const [row, col] = key.split("-").map((v) => +v);
+      const value = cachedGrid[key];
+
+      /**
+       * Si el valor de la posición no está en rago o si los valores de los
+       * dados no es válido, el valor almacenado en la caché, no se tiene en cuenta...
+       */
+      if (!isRange(row, col) || value < 0 || value > MAX_VALUE_DICE) {
+        return {};
+      }
+    }
+
+    return cachedGrid;
+  } catch (_) {
+    return {};
+  }
+};
+
+/**
  * Función que crea la data inicial de la grilla
  * @returns
  */
 export const initialGridData = () => {
   const newGrid: GridType = [];
+  // Obtener la información si existe en localstorage
+  const cachedGrid = validateCachedGrid(getValueFromCache("grid", {}));
 
   let index = 0;
 
@@ -349,6 +409,15 @@ export const initialGridData = () => {
       const x = i + (SIZE_ITEM + OFFSET_ITEM) * i;
       const y = c + (SIZE_ITEM + OFFSET_ITEM) * c;
 
+      const dice: DiceGrid | undefined = cachedGrid[`${i}-${c}`]
+        ? {
+            type: cachedGrid[`${i}-${c}`] as TypeDice,
+            state: DiceState.VISIBLE,
+            x,
+            y,
+          }
+        : undefined;
+
       newGrid[i][c] = {
         index,
         row: i,
@@ -356,15 +425,7 @@ export const initialGridData = () => {
         size: SIZE_ITEM,
         x,
         y,
-        // dice:
-        //   i === 0 || c === 0
-        //     ? {
-        //         type: 5,
-        //         state: DiceState.VISIBLE,
-        //         x,
-        //         y,
-        //       }
-        //     : undefined,
+        dice,
       };
 
       index++;
@@ -491,6 +552,12 @@ export const rotateDiceDrag = (diceDrag: DiceDrag) => {
   copyDiceDrag.orientation =
     copyDiceDrag.orientation + 1 === 4 ? 0 : copyDiceDrag.orientation + 1;
 
+  // Se acualiza la información de orienración en la caché...
+  savePropierties("drag", {
+    dices: copyDiceDrag.dices,
+    dir: copyDiceDrag.orientation,
+  });
+
   return copyDiceDrag;
 };
 
@@ -598,7 +665,7 @@ export const putDiceOnGrid = ({
       }
 
       if (typeEvent === DragEvents.END) {
-        console.log("EVALUAR END");
+        // console.log("EVALUAR END");
 
         const copyDiceDrag = cloneDeep(diceDrag);
         copyDiceDrag.isVisible = false;
@@ -630,7 +697,7 @@ export const validateMergeDice = ({
 
   let existsMerge = false;
 
-  console.log("diceDrag", diceDrag.dropDices);
+  // console.log("diceDrag", diceDrag.dropDices);
 
   if (copyDiceDrag?.dropDices) {
     /**
@@ -652,7 +719,7 @@ export const validateMergeDice = ({
         type >= MIN_VALUE_DICE &&
         type <= MAX_VALUE_DICE
       ) {
-        console.log("diceSorted", i, diceSorted[i]);
+        // console.log("diceSorted", i, diceSorted[i]);
         // TODO: Validar el dado tipo estrella...
         let typeDice = type;
         /**
@@ -665,7 +732,7 @@ export const validateMergeDice = ({
           typeDice
         );
 
-        console.log({ typeDice }, "neighborsMerge", neighborsMerge);
+        // console.log({ typeDice }, "neighborsMerge", neighborsMerge);
 
         if (neighborsMerge.length >= MIN_VALUE_MERGE - 1) {
           // Se debe mutar la grilla...
@@ -758,4 +825,50 @@ export const clearGrid = (gridData: GridType) => {
   const isASpaceAvailable = getTotalSpaceAvailable(copyGridData) !== 0;
 
   return { copyGridData, isASpaceAvailable, isLastDiceMerge };
+};
+
+/**
+ * Guarda el estado del juego en el localstorage,
+ * no todo el estado, sólo lo necesario...
+ * @param gridData
+ * @param diceDrag
+ */
+export const updateGameStateCache = (
+  gridData: GridType,
+  diceDrag: DiceDrag
+) => {
+  const grid = convertGridHashTable(gridData);
+  // Se obtienen sólo los valores necesario a almacenanar...
+  const drag = { dices: diceDrag.dices, dir: diceDrag.orientation };
+
+  // Se guarda la información en localStorage del estado del juego...
+  saveMultiplePropierties({ grid, drag });
+};
+
+export const getInitialDragData = (gridData: GridType): DiceDrag => {
+  const cachedDrag: { dices: TypeDice[]; dir: number } = getValueFromCache(
+    "drag",
+    { dices: [] }
+  );
+
+  // Se valida que existan dados
+  // además que los dados estén en rango de dados permitidos...
+  if (
+    cachedDrag.dices.length !== 0 &&
+    cachedDrag.dices.every((v) => v >= MIN_VALUE_DICE && v <= MAX_VALUE_DICE)
+  ) {
+    // Se retorna el valor de los dados de arrastre de la caché
+    // Si el valor de orientación almacenado no es valido se
+    // establece por defecto cero...
+    return {
+      dices: cachedDrag.dices,
+      typeOrientation: cachedDrag.dices.length === 1 ? "SINGLE" : "MULTIPLE",
+      orientation:
+        cachedDrag.dir >= 0 && cachedDrag.dir <= 3 ? cachedDrag.dir : 0,
+      isVisible: true,
+      totalMerges: 1,
+    };
+  }
+
+  return getDiceDrag(gridData);
 };
