@@ -1,0 +1,50 @@
+.progress-game {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  top: 90px;
+  width: 100%;
+}
+
+.progress-game-wrapper {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  width: 70%;
+}
+
+.progress-game-level {
+  align-items: center;
+  background-color: #ad27ea;
+  border-radius: 7px;
+  border: 2px solid black;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.3) 0px -3px 0px inset;
+  color: white;
+  display: flex;
+  font-size: 13px;
+  font-weight: bold;
+  height: 30px;
+  justify-content: center;
+  padding-bottom: 2px;
+  text-shadow: 1px 1px black;
+  width: 35px;
+  z-index: 1;
+}
+
+.progress-game-bar {
+  background: #29410a;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px, #29410a 0px 0px 0px 3px;
+  height: 10px;
+  position: relative;
+  width: 100%;
+}
+
+.progress-game-bar-value {
+  background: linear-gradient(to bottom, #ecd94f 0%, #f4e367 100%);
+  height: 100%;
+  position: absolute;
+  top: 0;
+  transition: width 1s ease-in-out;
+}
