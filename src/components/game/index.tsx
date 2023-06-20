@@ -1,6 +1,6 @@
-import { DragEventsType, Score, ScoreMessages } from "../../interfaces";
 import { delay } from "../../utils/helpers";
-import { DragGrid, GameWrapper, Header } from "./components";
+import { DragEventsType, Score, ScoreMessages } from "../../interfaces";
+import { DragGrid, GameWrapper, Header, Progress } from "./components";
 import {
   clearGrid,
   clearNewScoreMessages,
@@ -42,12 +42,18 @@ const Game = () => {
   useEffect(() => {
     if (!diceDrag.isVisible) {
       const runAsync = async () => {
-        const { existsMerge, copyGridData, copyDiceDrag, newScoreMessage } =
-          validateMergeDice({
-            gridData,
-            diceDrag,
-            // score,
-          });
+        const {
+          existsMerge,
+          copyGridData,
+          copyDiceDrag,
+          newScoreMessage,
+          nextLevel,
+          copyScore,
+        } = validateMergeDice({
+          gridData,
+          diceDrag,
+          score,
+        });
 
         // console.log("newScoreMessage", newScoreMessage);
         await delay(existsMerge ? 300 : 100);
@@ -66,6 +72,11 @@ const Game = () => {
 
           // Se limpian los mensajes que puedan existir en la grilla...
           setScoreMessages((data) => clearNewScoreMessages(data));
+
+          if (nextLevel) {
+            setScore(copyScore);
+            // TODO: Establecer estado para mostrar modal siguiente nivel...
+          }
 
           // Se valida si hay espacio en el board...
           if (isASpaceAvailable) {
@@ -119,6 +130,7 @@ const Game = () => {
         {...score.score}
         handleOptions={() => console.log("MOSTRAR OPCIONES")}
       />
+      <Progress {...score.progress} />
       <DragGrid
         diceDrag={diceDrag}
         gridData={gridData}

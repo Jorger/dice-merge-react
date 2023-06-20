@@ -4,6 +4,7 @@ import {
   DIMENSION_GRID,
   DiceState,
   DragEvents,
+  MAX_MERGES_NEXT_LEVEL,
   MAX_VALUE_DICE,
   MIN_VALUE_DICE,
   MIN_VALUE_MERGE,
@@ -691,19 +692,20 @@ export const putDiceOnGrid = ({
 interface ValidateMergeDice {
   gridData: GridType;
   diceDrag: DiceDrag;
-  // score: Score;
+  score: Score;
 }
 
 export const validateMergeDice = ({
   gridData,
   diceDrag,
-}: // score,
-ValidateMergeDice) => {
+  score,
+}: ValidateMergeDice) => {
   const copyDiceDrag = cloneDeep(diceDrag);
   const copyGridData = cloneDeep(gridData);
-  // const copyScore = cloneDeep(score);
+  const copyScore = cloneDeep(score);
   const newScoreMessage: ScoreMessages = { value: 0, timeStamp: 0, x: 0, y: 0 };
 
+  let nextLevel = false;
   let existsMerge = false;
 
   // console.log("diceDrag", diceDrag.dropDices);
@@ -799,11 +801,26 @@ ValidateMergeDice) => {
     }
   }
 
+  if (!existsMerge && score.progress.value >= MAX_MERGES_NEXT_LEVEL) {
+    nextLevel = true;
+    copyScore.progress.level++;
+    copyScore.progress.value = 0;
+
+    savePropierties("score", {
+      best: copyScore.score.best,
+      score: copyScore.score.score,
+      progress: copyScore.progress.value,
+      level: copyScore.progress.level,
+    });
+  }
+
   return {
     existsMerge,
     copyGridData,
     copyDiceDrag,
     newScoreMessage,
+    nextLevel,
+    copyScore,
   };
 };
 
