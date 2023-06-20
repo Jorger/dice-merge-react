@@ -1,4 +1,5 @@
 import {
+  DEFAULT_SCORE_CACHE,
   DICES_VALUES,
   DIMENSION_GRID,
   DiceState,
@@ -12,6 +13,7 @@ import {
   SIZE_ITEM,
 } from "../../utils/constants";
 import type {
+  CachedScore,
   DiceDrag,
   DiceGrid,
   DragEventsType,
@@ -19,6 +21,7 @@ import type {
   GridType,
   Neighbors,
   RenderDices,
+  Score,
   ScoreMessages,
   TypeDice,
   TypeOrientation,
@@ -688,14 +691,17 @@ export const putDiceOnGrid = ({
 interface ValidateMergeDice {
   gridData: GridType;
   diceDrag: DiceDrag;
+  // score: Score;
 }
 
 export const validateMergeDice = ({
   gridData,
   diceDrag,
-}: ValidateMergeDice) => {
+}: // score,
+ValidateMergeDice) => {
   const copyDiceDrag = cloneDeep(diceDrag);
   const copyGridData = cloneDeep(gridData);
+  // const copyScore = cloneDeep(score);
   const newScoreMessage: ScoreMessages = { value: 0, timeStamp: 0, x: 0, y: 0 };
 
   let existsMerge = false;
@@ -915,4 +921,64 @@ export const generateNewScoreMessages = (
   copyScoreMessages.push({ ...newScoreMessage, timeStamp });
 
   return copyScoreMessages;
+};
+
+/**
+ * Retorna la información inicial para el score del juego...
+ * @returns
+ */
+export const getInitialScore = (): Score => {
+  // Primero se lee la información que hay en LocalStorage...
+  const cachedScore: CachedScore = getValueFromCache(
+    "score",
+    DEFAULT_SCORE_CACHE
+  );
+
+  return {
+    score: {
+      best: cachedScore.best || 0,
+      score: cachedScore.score || 0,
+      animate: false,
+    },
+    progress: {
+      value: cachedScore.progress || 0,
+      level: cachedScore.level || 0,
+    },
+  };
+};
+
+/**
+ * Actualizar el score obtenido en el juego
+ * @param score
+ * @param scoreValue
+ * @param progressValue
+ * @returns
+ */
+export const updateScore = (
+  score: Score,
+  scoreValue: number,
+  progressValue: number = 1
+) => {
+  const copyScore = cloneDeep(score);
+  const newScore = copyScore.score.score + scoreValue;
+  copyScore.score.score = newScore;
+
+  if (newScore > copyScore.score.best) {
+    copyScore.score.best = copyScore.score.score;
+  }
+
+  if (!copyScore.score.animate) {
+    copyScore.score.animate = true;
+  }
+
+  copyScore.progress.value += progressValue;
+
+  savePropierties("score", {
+    best: copyScore.score.best,
+    score: copyScore.score.score,
+    progress: copyScore.progress.value,
+    level: copyScore.progress.level,
+  });
+
+  return copyScore;
 };
