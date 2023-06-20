@@ -1,0 +1,53 @@
+.score-message-grid {
+  animation: fadeInUp 0.6s ease-in-out;
+  display: flex;
+  font-size: 30px;
+  justify-content: center;
+  position: absolute;
+  z-index: 2;
+  font-weight: bold;
+  background: linear-gradient(to top, #dbd9da 62%, #ffffff 75%);
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: black;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.score-message-grid.hide {
+  opacity: 0;
+  animation: fadeOut 0.8s ease-in;
+}
+
+@media not all and (min-resolution: 0.001dpcm) {
+  @supports (-webkit-appearance: none) {
+    .score-message-grid {
+      color: white;
+      -webkit-text-fill-color: unset;
+    }
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    -webkit-transform: translate3d(0, 100%, 0);
+    transform: translate3d(0, 100%, 0);
+  }
+
+  to {
+    opacity: 1;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}

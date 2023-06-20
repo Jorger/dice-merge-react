@@ -1,3 +1,4 @@
+import { DragEvents } from "../../../../utils/constants";
 import { Draggable, Grid } from "..";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 import { snapTopCursor } from "./snapCursor";
@@ -13,12 +14,13 @@ import type {
   DiceDrag,
   DragEventsType,
   GridType,
+  ScoreMessages,
 } from "../../../../interfaces";
-import { DragEvents } from "../../../../utils/constants";
 
 interface DragGridPops {
   gridData: GridType;
   diceDrag: DiceDrag;
+  scoreMessages: ScoreMessages[];
   onRotate: () => void;
   onDragEvent: (type: DragEventsType, over: string) => void;
 }
@@ -28,6 +30,7 @@ const activationConstraint = { distance: 30 };
 const DragGrid = ({
   gridData,
   diceDrag,
+  scoreMessages,
   onRotate,
   onDragEvent,
 }: DragGridPops) => {
@@ -46,7 +49,7 @@ const DragGrid = ({
       }
       sensors={sensors}
     >
-      <Grid gridData={gridData} />
+      <Grid gridData={gridData} scoreMessages={scoreMessages} />
       <Draggable diceDrag={diceDrag} onRotate={onRotate} />
     </DndContext>
   );

@@ -8,6 +8,7 @@ import {
   MIN_VALUE_MERGE,
   NEIGHBOR_POSITIONS,
   OFFSET_ITEM,
+  SCORE_DICE_ALL,
   SIZE_ITEM,
 } from "../../utils/constants";
 import type {
@@ -18,6 +19,7 @@ import type {
   GridType,
   Neighbors,
   RenderDices,
+  ScoreMessages,
   TypeDice,
   TypeOrientation,
 } from "../../interfaces";
@@ -694,6 +696,7 @@ export const validateMergeDice = ({
 }: ValidateMergeDice) => {
   const copyDiceDrag = cloneDeep(diceDrag);
   const copyGridData = cloneDeep(gridData);
+  const newScoreMessage: ScoreMessages = { value: 0, timeStamp: 0, x: 0, y: 0 };
 
   let existsMerge = false;
 
@@ -760,7 +763,13 @@ export const validateMergeDice = ({
             copyGridData[diceRow][diceCol].dice.state = DiceState.APPEAR;
             // Se incrementa el valor evaluado...
             copyGridData[diceRow][diceCol].dice.type = newDiceType;
+            // TODO: Evaluar el dado tipo estrella...
+            const originalTypeDice: TypeDice = typeDice;
 
+            newScoreMessage.value =
+              originalTypeDice *
+              (neighborsMerge.length + 1) *
+              copyDiceDrag.totalMerges;
             /**
              * Se incrementa el valor del ítem que se había arrastrando,
              * por ejemplo si el valor del dado era 2, pasa a 3
@@ -772,7 +781,11 @@ export const validateMergeDice = ({
           } else {
             copyGridData[diceRow][diceCol].dice.state = DiceState.DISAPEAR;
             // TODO: validar el score...
+            newScoreMessage.value = SCORE_DICE_ALL;
           }
+
+          newScoreMessage.x = diceSorted[i].x;
+          newScoreMessage.y = diceSorted[i].y;
 
           break;
         }
@@ -784,6 +797,7 @@ export const validateMergeDice = ({
     existsMerge,
     copyGridData,
     copyDiceDrag,
+    newScoreMessage,
   };
 };
 
@@ -871,4 +885,34 @@ export const getInitialDragData = (gridData: GridType): DiceDrag => {
   }
 
   return getDiceDrag(gridData);
+};
+
+/**
+ * Para limpiar los mensajes de score, pasado un tiempo
+ * @param scoreMessages
+ * @returns
+ */
+export const clearNewScoreMessages = (scoreMessages: ScoreMessages[]) =>
+  cloneDeep(scoreMessages).filter((v) => v.timeStamp >= new Date().getTime());
+
+/**
+ * Crear la información necesaria para mostrar el score en la grilla...
+ * @param scoreMessages
+ * @param newScoreMessage
+ * @returns
+ */
+export const generateNewScoreMessages = (
+  scoreMessages: ScoreMessages[],
+  newScoreMessage: ScoreMessages
+) => {
+  const currentTime = new Date().getTime();
+  // Se dejan sólo aquellos cuyo timeStamp sea mayor o igual que el tiempo actual...
+  const copyScoreMessages = clearNewScoreMessages(scoreMessages);
+
+  // Se le adiciona 5 segundos de vida al mensaje,
+  // después de ese tiempo se debe eliminar del estado...
+  const timeStamp = currentTime + 5000;
+  copyScoreMessages.push({ ...newScoreMessage, timeStamp });
+
+  return copyScoreMessages;
 };

@@ -1,8 +1,10 @@
-import { DragEventsType } from "../../interfaces";
+import { DragEventsType, ScoreMessages } from "../../interfaces";
 import { delay } from "../../utils/helpers";
 import { DragGrid, GameWrapper } from "./components";
 import {
   clearGrid,
+  clearNewScoreMessages,
+  generateNewScoreMessages,
   getDiceDrag,
   getInitialDragData,
   initialGridData,
@@ -25,14 +27,21 @@ const Game = () => {
    */
   const [diceDrag, setDiceDrag] = useState(() => getInitialDragData(gridData));
 
+  /**
+   * Para los mensajes de score que se muestran en la grilla...
+   */
+  const [scoreMessages, setScoreMessages] = useState<ScoreMessages[]>([]);
+
   useEffect(() => {
     if (!diceDrag.isVisible) {
       const runAsync = async () => {
-        const { existsMerge, copyGridData, copyDiceDrag } = validateMergeDice({
-          gridData,
-          diceDrag,
-        });
+        const { existsMerge, copyGridData, copyDiceDrag, newScoreMessage } =
+          validateMergeDice({
+            gridData,
+            diceDrag,
+          });
 
+        // console.log("newScoreMessage", newScoreMessage);
         await delay(existsMerge ? 300 : 100);
 
         if (!existsMerge) {
@@ -47,6 +56,9 @@ const Game = () => {
             await delay(500);
           }
 
+          // Se limpian los mensajes que puedan existir en la grilla...
+          setScoreMessages((data) => clearNewScoreMessages(data));
+
           // Se valida si hay espacio en el board...
           if (isASpaceAvailable) {
             // Si es así se establecen los nuevos valores
@@ -60,6 +72,11 @@ const Game = () => {
             console.log("NO HAY ESPACIO DISPONIBLE, GAME OVER");
           }
         } else {
+          // Se crea un nuevo mensaje que indica el merge
+          setScoreMessages((data) =>
+            generateNewScoreMessages(data, newScoreMessage)
+          );
+
           setGridData(copyGridData);
           setDiceDrag(copyDiceDrag);
         }
@@ -91,6 +108,7 @@ const Game = () => {
       <DragGrid
         diceDrag={diceDrag}
         gridData={gridData}
+        scoreMessages={scoreMessages}
         onRotate={handleRotate}
         onDragEvent={handleDragEvent}
       />
