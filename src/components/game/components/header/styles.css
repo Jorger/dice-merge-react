@@ -1,0 +1,69 @@
+.header-game {
+  left: 0;
+  position: absolute;
+  top: 10px;
+  width: 100%;
+}
+
+.header-game-wrapper {
+  background-color: #463a2f;
+  border-radius: 7px;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+  display: flex;
+  margin: 0 10px;
+  padding: 13px;
+}
+
+.header-game-buttons {
+  align-items: center;
+  display: flex;
+  height: 45px;
+  justify-content: center;
+  width: 45px;
+}
+
+.header-game-buttons .icon-wrapper {
+  height: 70%;
+  transform: translateY(-2px);
+  width: 70%;
+}
+
+.header-game-buttons:active .icon-wrapper {
+  transform: translateY(0);
+}
+
+.header-game-scores {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  margin: 0 10px;
+}
+
+.header-game-score {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  text-align: center;
+  width: 50%;
+}
+
+.header-game-score:first-child {
+  border-right: 1px solid #9997a0;
+}
+
+.header-game-score-label {
+  color: #9997a0;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.header-game-score-value {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+}

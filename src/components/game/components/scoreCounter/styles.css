@@ -1,0 +1,17 @@
+.score-counter {
+  animation: pulse 0.2s infinite;
+}
+
+@keyframes pulse {
+  from {
+    transform: scale3d(0.8, 0.8, 0.8);
+  }
+
+  50% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+
+  to {
+    transform: scale3d(0.8, 0.8, 0.8);
+  }
+}

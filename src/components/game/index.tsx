@@ -1,16 +1,18 @@
-import { DragEventsType, ScoreMessages } from "../../interfaces";
+import { DragEventsType, Score, ScoreMessages } from "../../interfaces";
 import { delay } from "../../utils/helpers";
-import { DragGrid, GameWrapper } from "./components";
+import { DragGrid, GameWrapper, Header } from "./components";
 import {
   clearGrid,
   clearNewScoreMessages,
   generateNewScoreMessages,
   getDiceDrag,
   getInitialDragData,
+  getInitialScore,
   initialGridData,
   putDiceOnGrid,
   rotateDiceDrag,
   updateGameStateCache,
+  updateScore,
   validateMergeDice,
 } from "./helpers";
 import React, { useEffect, useState } from "react";
@@ -32,6 +34,11 @@ const Game = () => {
    */
   const [scoreMessages, setScoreMessages] = useState<ScoreMessages[]>([]);
 
+  /**
+   * Para guardar el score de la partida...
+   */
+  const [score, setScore] = useState<Score>(() => getInitialScore());
+
   useEffect(() => {
     if (!diceDrag.isVisible) {
       const runAsync = async () => {
@@ -39,6 +46,7 @@ const Game = () => {
           validateMergeDice({
             gridData,
             diceDrag,
+            // score,
           });
 
         // console.log("newScoreMessage", newScoreMessage);
@@ -77,6 +85,8 @@ const Game = () => {
             generateNewScoreMessages(data, newScoreMessage)
           );
 
+          setScore((data) => updateScore(data, newScoreMessage.value));
+
           setGridData(copyGridData);
           setDiceDrag(copyDiceDrag);
         }
@@ -86,7 +96,7 @@ const Game = () => {
 
       runAsync();
     }
-  }, [diceDrag, gridData]);
+  }, [diceDrag, gridData, score]);
 
   const handleRotate = () => {
     setDiceDrag(rotateDiceDrag(diceDrag));
@@ -105,6 +115,10 @@ const Game = () => {
 
   return (
     <GameWrapper>
+      <Header
+        {...score.score}
+        handleOptions={() => console.log("MOSTRAR OPCIONES")}
+      />
       <DragGrid
         diceDrag={diceDrag}
         gridData={gridData}
