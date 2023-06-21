@@ -1,0 +1,47 @@
+.progress-circle-wrapper {
+  height: 180px;
+  position: relative;
+  width: 180px;
+}
+
+.progress-circle {
+  background: conic-gradient(#4edbf3 var(--progress), #2b292c 0deg);
+  border-radius: 50%;
+  border: 4px solid black;
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.progress-circle::after {
+  align-items: center;
+  background: #4a324a;
+  border-radius: 50%;
+  border: 4px solid black;
+  content: "";
+  display: flex;
+  justify-content: center;
+  margin: 20px;
+  width: 100%;
+}
+
+.progress-circle-value {
+  align-items: center;
+  color: white;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.progress-circle-value-progress {
+  margin-top: 5px;
+  font-size: 60px;
+  font-weight: bold;
+}
+
+.progress-circle-value-progress.next {
+  animation: bounceIn 1s both;
+}
