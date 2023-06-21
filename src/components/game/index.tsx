@@ -1,13 +1,6 @@
 import { delay } from "../../utils/helpers";
 import { DragEventsType, Score, ScoreMessages } from "../../interfaces";
 import {
-  DragGrid,
-  GameWrapper,
-  Header,
-  NextLevel,
-  Progress,
-} from "./components";
-import {
   clearGrid,
   clearNewScoreMessages,
   generateNewScoreMessages,
@@ -16,11 +9,20 @@ import {
   getInitialScore,
   initialGridData,
   putDiceOnGrid,
+  resetCachedGameState,
   rotateDiceDrag,
   updateGameStateCache,
   updateScore,
   validateMergeDice,
 } from "./helpers";
+import {
+  DragGrid,
+  GameOver,
+  GameWrapper,
+  Header,
+  NextLevel,
+  Progress,
+} from "./components";
 import React, { useEffect, useState } from "react";
 
 const Game = () => {
@@ -44,6 +46,11 @@ const Game = () => {
    * Estado que indica si se muestra o no el modal de nextLevel.
    */
   const [showNextLevel, setShowNextLevel] = useState(false);
+
+  /**
+   * Para el estado de gameover...
+   */
+  const [isGameOver, setIsGameOver] = useState(false);
 
   /**
    * Para guardar el score de la partida...
@@ -99,7 +106,10 @@ const Game = () => {
             // Se debe guardar la data en localstorage...
             updateGameStateCache(newGridData, newDiceDrag);
           } else {
-            console.log("NO HAY ESPACIO DISPONIBLE, GAME OVER");
+            // Se debe limpiar localstorage...
+            resetCachedGameState();
+            // Se debe mostrar que el juego ha acabado...
+            setIsGameOver(true);
           }
         } else {
           // Se crea un nuevo mensaje que indica el merge
@@ -135,6 +145,16 @@ const Game = () => {
     });
   };
 
+  const handleRestart = () => {
+    resetCachedGameState();
+
+    const newGridData = initialGridData();
+    setGridData(newGridData);
+    setDiceDrag(getDiceDrag(newGridData));
+    setScore(getInitialScore());
+    setIsGameOver(false);
+  };
+
   return (
     <GameWrapper>
       {showNextLevel && (
@@ -142,6 +162,9 @@ const Game = () => {
           level={score.progress.level}
           handleClose={() => setShowNextLevel(false)}
         />
+      )}
+      {isGameOver && (
+        <GameOver {...score.score} handleRestart={handleRestart} />
       )}
       <Header
         {...score.score}

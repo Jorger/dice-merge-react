@@ -30,6 +30,7 @@ import type {
 import { randomNumber } from "../../utils/helpers";
 import cloneDeep from "lodash.clonedeep";
 import {
+  deleteProperty,
   getValueFromCache,
   saveMultiplePropierties,
   savePropierties,
@@ -998,4 +999,20 @@ export const updateScore = (
   });
 
   return copyScore;
+};
+
+/**
+ * Función que elimina la información del estado del juego
+ * que estaba almacenada en localStorage...
+ */
+export const resetCachedGameState = () => {
+  deleteProperty("grid");
+  deleteProperty("drag");
+
+  const cachedScore: CachedScore = getValueFromCache(
+    "score",
+    DEFAULT_SCORE_CACHE
+  );
+
+  savePropierties("score", { ...cachedScore, score: 0 });
 };

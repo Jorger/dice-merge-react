@@ -1,6 +1,7 @@
 import Dice from "./dice";
 import Draggable from "./draggable";
 import DragGrid from "./drag";
+import GameOver from "./gameOver";
 import GameWrapper from "./wrapper";
 import Grid from "./grid";
 import GridItem from "./item";
@@ -14,6 +15,7 @@ export {
   Dice,
   Draggable,
   DragGrid,
+  GameOver,
   GameWrapper,
   Grid,
   GridItem,
