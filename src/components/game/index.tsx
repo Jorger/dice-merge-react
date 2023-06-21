@@ -1,6 +1,12 @@
 import { delay } from "../../utils/helpers";
 import { DragEventsType, Score, ScoreMessages } from "../../interfaces";
-import { DragGrid, GameWrapper, Header, Progress } from "./components";
+import {
+  DragGrid,
+  GameWrapper,
+  Header,
+  NextLevel,
+  Progress,
+} from "./components";
 import {
   clearGrid,
   clearNewScoreMessages,
@@ -33,6 +39,11 @@ const Game = () => {
    * Para los mensajes de score que se muestran en la grilla...
    */
   const [scoreMessages, setScoreMessages] = useState<ScoreMessages[]>([]);
+
+  /**
+   * Estado que indica si se muestra o no el modal de nextLevel.
+   */
+  const [showNextLevel, setShowNextLevel] = useState(false);
 
   /**
    * Para guardar el score de la partida...
@@ -75,7 +86,7 @@ const Game = () => {
 
           if (nextLevel) {
             setScore(copyScore);
-            // TODO: Establecer estado para mostrar modal siguiente nivel...
+            setShowNextLevel(true);
           }
 
           // Se valida si hay espacio en el board...
@@ -126,6 +137,12 @@ const Game = () => {
 
   return (
     <GameWrapper>
+      {showNextLevel && (
+        <NextLevel
+          level={score.progress.level}
+          handleClose={() => setShowNextLevel(false)}
+        />
+      )}
       <Header
         {...score.score}
         handleOptions={() => console.log("MOSTRAR OPCIONES")}
