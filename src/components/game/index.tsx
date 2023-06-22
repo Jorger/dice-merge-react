@@ -1,10 +1,10 @@
 import { delay } from "../../utils/helpers";
-import { DragEventsType, Score, ScoreMessages } from "../../interfaces";
 import {
   clearGrid,
   clearNewScoreMessages,
   generateNewScoreMessages,
   getDiceDrag,
+  getGameHelps,
   getInitialDragData,
   getInitialScore,
   initialGridData,
@@ -16,10 +16,18 @@ import {
   validateMergeDice,
 } from "./helpers";
 import {
+  DragEventsType,
+  HelpsGame,
+  Score,
+  ScoreMessages,
+  TypeHelps,
+} from "../../interfaces";
+import {
   DragGrid,
   GameOver,
   GameWrapper,
   Header,
+  Helps,
   NextLevel,
   Progress,
 } from "./components";
@@ -56,6 +64,11 @@ const Game = () => {
    * Para guardar el score de la partida...
    */
   const [score, setScore] = useState<Score>(() => getInitialScore());
+
+  /**
+   * Para manejar las ayudas del juego... (setHelpsGame)
+   */
+  const [helpsGame] = useState<HelpsGame>(() => getGameHelps());
 
   useEffect(() => {
     if (!diceDrag.isVisible) {
@@ -155,6 +168,10 @@ const Game = () => {
     setIsGameOver(false);
   };
 
+  const handleHelp = (type: TypeHelps) => {
+    console.log({ type });
+  };
+
   return (
     <GameWrapper>
       {showNextLevel && (
@@ -171,6 +188,11 @@ const Game = () => {
         handleOptions={() => console.log("MOSTRAR OPCIONES")}
       />
       <Progress {...score.progress} />
+      <Helps
+        diceDrag={diceDrag}
+        helpsGame={helpsGame}
+        handleHelp={handleHelp}
+      />
       <DragGrid
         diceDrag={diceDrag}
         gridData={gridData}

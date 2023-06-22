@@ -1,0 +1,76 @@
+.game-helps {
+  bottom: 0;
+  height: 200px;
+  position: absolute;
+  width: 100%;
+}
+
+.game-helps-wrapper {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.game-helps-wrapper .button {
+  align-items: center;
+  display: flex;
+  height: 50px;
+  justify-content: center;
+  position: absolute;
+  width: 50px;
+}
+
+.game-helps-wrapper .button .icon-wrapper {
+  height: 65%;
+  transform: translateY(-2px);
+  width: 65%;
+}
+
+.game-helps-wrapper .button:active .icon-wrapper {
+  transform: translateY(0);
+}
+
+.game-helps-wrapper .button span {
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em,
+    rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em,
+    rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset;
+  background: #ad27ea;
+  border-radius: 50%;
+  bottom: -5px;
+  color: white;
+  font-weight: bold;
+  height: 20px;
+  position: absolute;
+  right: -5px;
+  width: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.game-helps-bomb,
+.game-helps-undo {
+  top: 30px;
+  left: 30px;
+}
+
+.game-helps-star,
+.game-helps-trash {
+  top: 110px;
+  left: 60px;
+}
+
+.game-helps-bomb {
+  left: auto;
+  right: 30px;
+}
+
+.game-helps-star {
+  left: auto;
+  right: 60px;
+}
+
+.game-helps-wrapper .button .icon-close {
+  height: 50%;
+  width: 50%;
+}
