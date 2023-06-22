@@ -4,6 +4,7 @@ import {
   DIMENSION_GRID,
   DiceState,
   DragEvents,
+  HELPS,
   MAX_MERGES_NEXT_LEVEL,
   MAX_VALUE_DICE,
   MIN_VALUE_DICE,
@@ -30,6 +31,7 @@ import type {
   TypeDice,
   TypeHelps,
   TypeOrientation,
+  UndoValues,
 } from "../../interfaces";
 import {
   getCurrentTimeStamp,
@@ -438,6 +440,16 @@ const getTotalHelp = (type: TypeHelps) => {
 };
 
 /**
+ * Retorna los valores de las ayudas que se guardarán en la cache..
+ * @param helpsGame
+ * @returns
+ */
+const getNewCacheHelps = (helpsGame: HelpsGame) =>
+  Object.keys(helpsGame)
+    .map((v) => ({ [v]: helpsGame[v as TypeHelps].remaining }))
+    .reduce((a, s) => ({ ...a, ...s }), {});
+
+/**
  * Función que crea la data inicial de la grilla
  * @returns
  */
@@ -610,19 +622,28 @@ export const rotateDiceDrag = (diceDrag: DiceDrag) => {
 interface PutDiceOnGrid {
   diceDrag: DiceDrag;
   gridData: GridType;
+  helpsGame: HelpsGame;
   over: string;
+  score: Score;
   typeEvent: DragEventsType;
+  undo: UndoValues[];
   setDiceDrag: React.Dispatch<React.SetStateAction<DiceDrag>>;
   setGridData: React.Dispatch<React.SetStateAction<GridType>>;
+  setHelpsGame: React.Dispatch<React.SetStateAction<HelpsGame>>;
+  setUndo: React.Dispatch<React.SetStateAction<UndoValues[]>>;
 }
 
 export const putDiceOnGrid = ({
   diceDrag,
   gridData,
+  helpsGame,
   over,
+  score,
   typeEvent,
+  undo = [],
   setDiceDrag,
   setGridData,
+  setUndo,
 }: PutDiceOnGrid) => {
   const copyGridData = cloneDeep(gridData);
   let updateGrid = false;
@@ -717,9 +738,39 @@ export const putDiceOnGrid = ({
         copyDiceDrag.isVisible = false;
         copyDiceDrag.dropDices = dices;
         setDiceDrag(copyDiceDrag);
+
+        /**
+         * Como ya se ha establecido el elemento en la grilla,
+         * se guarda el valor en el undo...
+         * se valida que tenga undos disponibles, si no es así,
+         * no se guardará el valor en el estado...
+         */
+        if (helpsGame.UNDO.remaining > 0) {
+          const copyUndo = cloneDeep(undo);
+
+          // Se agrea el nuevo undo...
+          copyUndo.push({
+            grid: convertGridHashTable(gridData),
+            score: {
+              score: score.score.score,
+              best: score.score.best,
+              progress: score.progress.value,
+              level: score.progress.level,
+            },
+            drag: {
+              dices: diceDrag.dices,
+              dir: diceDrag.orientation,
+            },
+          });
+
+          /**
+           * Sólo se obtienen el máximo de undos,
+           * por ejemplo si el valor es 5, sólo se guardarán los últimos cinco
+           */
+          setUndo(copyUndo.splice(TYPES_HELPS.UNDO * -1));
+        }
       }
     }
-    // console.log({ diceOneRow, diceOneCol, dices });
   }
 
   if (updateGrid) {
@@ -1076,3 +1127,105 @@ export const getGameHelps = () =>
       };
     })
     .reduce((a, s) => ({ ...a, ...s }), {}) as HelpsGame;
+
+interface ValidateUndo {
+  gridData: GridType;
+  helpsGame: HelpsGame;
+  undo: UndoValues[];
+  setDiceDrag: React.Dispatch<React.SetStateAction<DiceDrag>>;
+  setGridData: React.Dispatch<React.SetStateAction<GridType>>;
+  setHelpsGame: React.Dispatch<React.SetStateAction<HelpsGame>>;
+  setScore: React.Dispatch<React.SetStateAction<Score>>;
+  setUndo: React.Dispatch<React.SetStateAction<UndoValues[]>>;
+}
+/**
+ * Valida el undo del juego...
+ * @param param0
+ */
+export const validateUndo = ({
+  gridData,
+  helpsGame,
+  undo,
+  setDiceDrag,
+  setGridData,
+  setHelpsGame,
+  setScore,
+  setUndo,
+}: ValidateUndo) => {
+  const totalUndo = getTotalHelp(HELPS.UNDO);
+
+  if (totalUndo > 0 && undo.length !== 0) {
+    const copyUndo = cloneDeep(undo);
+    const lastUndo = copyUndo.pop();
+
+    if (lastUndo) {
+      console.log("undo", undo);
+      console.log("lastUndo", lastUndo);
+      const { grid, score, drag } = lastUndo;
+      const newGrid: GridType = [];
+
+      // Crear los nuevos valores de la grilla...
+      for (let i = 0; i < DIMENSION_GRID; i++) {
+        newGrid[i] = [];
+
+        for (let c = 0; c < DIMENSION_GRID; c++) {
+          // Se crea el dado, si es que existe en la caché...
+          const dice: DiceGrid | undefined = grid[`${i}-${c}`]
+            ? {
+                type: grid[`${i}-${c}`] as TypeDice,
+                state: DiceState.VISIBLE,
+                x: gridData[i][c].x,
+                y: gridData[i][c].y,
+              }
+            : undefined;
+
+          newGrid[i][c] = { ...gridData[i][c], dice };
+        }
+      }
+
+      const newDiceDrag: DiceDrag = {
+        dices: drag.dices,
+        typeOrientation: drag.dices.length === 1 ? "SINGLE" : "MULTIPLE",
+        orientation: drag.dir >= 0 && drag.dir <= 3 ? drag.dir : 0,
+        isVisible: true,
+        totalMerges: 1,
+      };
+
+      const newScore: Score = {
+        score: {
+          best: score.best,
+          score: score.score,
+          animate: true,
+        },
+        progress: {
+          value: score.progress,
+          level: score.level,
+        },
+      };
+
+      const copyHelpsGame = cloneDeep(helpsGame);
+      copyHelpsGame.UNDO.remaining--;
+
+      setGridData(newGrid);
+      setDiceDrag(newDiceDrag);
+      setHelpsGame(copyHelpsGame);
+      setScore(newScore);
+      setUndo(copyUndo);
+
+      // Guarda en localStorage...
+      const newCacheHelps = getNewCacheHelps(copyHelpsGame);
+      saveMultiplePropierties({
+        helps: newCacheHelps,
+        timestamp: getCurrentTimeStamp(),
+        score: {
+          best: newScore.score.best,
+          score: newScore.score.score,
+          progress: newScore.progress.value,
+          level: newScore.progress.level,
+        },
+      });
+
+      updateGameStateCache(newGrid, newDiceDrag);
+    }
+  }
+};

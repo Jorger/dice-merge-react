@@ -14,6 +14,7 @@ import {
   updateGameStateCache,
   updateScore,
   validateMergeDice,
+  validateUndo,
 } from "./helpers";
 import {
   DragEventsType,
@@ -21,6 +22,7 @@ import {
   Score,
   ScoreMessages,
   TypeHelps,
+  UndoValues,
 } from "../../interfaces";
 import {
   DragGrid,
@@ -32,6 +34,7 @@ import {
   Progress,
 } from "./components";
 import React, { useEffect, useState } from "react";
+import { HELPS } from "../../utils/constants";
 
 const Game = () => {
   // setGridData
@@ -68,7 +71,12 @@ const Game = () => {
   /**
    * Para manejar las ayudas del juego... (setHelpsGame)
    */
-  const [helpsGame] = useState<HelpsGame>(() => getGameHelps());
+  const [helpsGame, setHelpsGame] = useState<HelpsGame>(() => getGameHelps());
+
+  /**
+   * Guarda la información relacionada al undo del juego...
+   */
+  const [undo, setUndo] = useState<UndoValues[]>([]);
 
   useEffect(() => {
     if (!diceDrag.isVisible) {
@@ -151,10 +159,15 @@ const Game = () => {
     putDiceOnGrid({
       diceDrag,
       gridData,
+      helpsGame,
       over,
+      score,
       typeEvent,
+      undo,
       setDiceDrag,
       setGridData,
+      setHelpsGame,
+      setUndo,
     });
   };
 
@@ -169,6 +182,19 @@ const Game = () => {
   };
 
   const handleHelp = (type: TypeHelps) => {
+    if (type === HELPS.UNDO) {
+      validateUndo({
+        gridData,
+        helpsGame,
+        undo,
+        setDiceDrag,
+        setGridData,
+        setHelpsGame,
+        setScore,
+        setUndo,
+      });
+    }
+
     console.log({ type });
   };
 
@@ -191,6 +217,7 @@ const Game = () => {
       <Helps
         diceDrag={diceDrag}
         helpsGame={helpsGame}
+        totalUndo={undo.length}
         handleHelp={handleHelp}
       />
       <DragGrid
