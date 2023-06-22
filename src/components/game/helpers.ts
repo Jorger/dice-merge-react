@@ -12,6 +12,7 @@ import {
   OFFSET_ITEM,
   SCORE_DICE_ALL,
   SIZE_ITEM,
+  TYPES_HELPS,
 } from "../../utils/constants";
 import type {
   CachedScore,
@@ -20,14 +21,21 @@ import type {
   DragEventsType,
   GridItemType,
   GridType,
+  HelpsGame,
   Neighbors,
   RenderDices,
   Score,
   ScoreMessages,
+  TotalMaxHelps,
   TypeDice,
+  TypeHelps,
   TypeOrientation,
 } from "../../interfaces";
-import { randomNumber } from "../../utils/helpers";
+import {
+  getCurrentTimeStamp,
+  isValidTimeStamp,
+  randomNumber,
+} from "../../utils/helpers";
 import cloneDeep from "lodash.clonedeep";
 import {
   deleteProperty,
@@ -35,6 +43,7 @@ import {
   saveMultiplePropierties,
   savePropierties,
 } from "../../utils/storage";
+import { TypeIcon } from "../icon";
 
 /**
  * Función que devuelve cuantos slots están disponibles...
@@ -396,6 +405,36 @@ const validateCachedGrid = (cachedGrid: Record<string, number> = {}) => {
   } catch (_) {
     return {};
   }
+};
+
+/**
+ * Retorna el total de una ayuda...
+ * @param type
+ * @returns
+ */
+const getTotalHelp = (type: TypeHelps) => {
+  const currentTimestamp = getCurrentTimeStamp();
+  const cache: TotalMaxHelps = getValueFromCache("helps", TYPES_HELPS);
+  const cacheTimestamp: number = getValueFromCache(
+    "timestamp",
+    currentTimestamp
+  );
+
+  const timestamp = isValidTimeStamp(cacheTimestamp)
+    ? cacheTimestamp
+    : currentTimestamp;
+
+  let total = 0;
+
+  if (timestamp === currentTimestamp) {
+    total = cache[type] <= TYPES_HELPS[type] ? cache[type] : TYPES_HELPS[type];
+  } else {
+    if (currentTimestamp > timestamp) {
+      total = TYPES_HELPS[type];
+    }
+  }
+
+  return total;
 };
 
 /**
@@ -1016,3 +1055,24 @@ export const resetCachedGameState = () => {
 
   savePropierties("score", { ...cachedScore, score: 0 });
 };
+
+/**
+ * Obtener el estado inicial de las ayudas...
+ * @returns
+ */
+export const getGameHelps = () =>
+  Object.keys(TYPES_HELPS)
+    .map((help, index) => {
+      const type = help as TypeHelps;
+
+      return {
+        [type]: {
+          index,
+          icon: type.toLowerCase() as TypeIcon,
+          remaining: getTotalHelp(type),
+          type,
+          selected: false,
+        },
+      };
+    })
+    .reduce((a, s) => ({ ...a, ...s }), {}) as HelpsGame;

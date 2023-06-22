@@ -6,6 +6,7 @@ import GameWrapper from "./wrapper";
 import Grid from "./grid";
 import GridItem from "./item";
 import Header from "./header";
+import Helps from "./helps";
 import NextLevel from "./nextLevel";
 import Progress from "./progress";
 import ScoreCounter from "./scoreCounter";
@@ -19,9 +20,10 @@ export {
   GameWrapper,
   Grid,
   GridItem,
-  ScoreMessage,
+  Header,
+  Helps,
   NextLevel,
   Progress,
   ScoreCounter,
-  Header,
+  ScoreMessage,
 };
