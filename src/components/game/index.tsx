@@ -14,6 +14,7 @@ import {
   updateGameStateCache,
   updateScore,
   validateMergeDice,
+  validateRemoveDiceWithBomb,
   validateSelectioBombAndStar,
   validateTrash,
   validateUndo,
@@ -36,7 +37,7 @@ import {
   Progress,
 } from "./components";
 import React, { useEffect, useState } from "react";
-import { HELPS } from "../../utils/constants";
+import { DragEvents, HELPS } from "../../utils/constants";
 
 const Game = () => {
   // setGridData
@@ -157,20 +158,39 @@ const Game = () => {
     setDiceDrag(rotateDiceDrag(diceDrag));
   };
 
+  /**
+   * Función que escucha las acciones de drag...
+   * @param typeEvent
+   * @param over
+   */
   const handleDragEvent = (typeEvent: DragEventsType, over: string) => {
-    putDiceOnGrid({
-      diceDrag,
-      gridData,
-      helpsGame,
-      over,
-      score,
-      typeEvent,
-      undo,
-      setDiceDrag,
-      setGridData,
-      setHelpsGame,
-      setUndo,
-    });
+    if (!diceDrag.isBomb) {
+      putDiceOnGrid({
+        diceDrag,
+        gridData,
+        helpsGame,
+        over,
+        score,
+        typeEvent,
+        undo,
+        setDiceDrag,
+        setGridData,
+        setHelpsGame,
+        setUndo,
+      });
+    }
+
+    if (diceDrag.isBomb && typeEvent === DragEvents.END && over !== "") {
+      validateRemoveDiceWithBomb({
+        diceDrag,
+        gridData,
+        helpsGame,
+        over,
+        setDiceDrag,
+        setGridData,
+        setHelpsGame,
+      });
+    }
   };
 
   const handleRestart = () => {

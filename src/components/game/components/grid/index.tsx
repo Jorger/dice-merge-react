@@ -6,18 +6,19 @@ import type { GridType, ScoreMessages } from "../../../../interfaces";
 
 interface GridPops {
   gridData: GridType;
+  isBomb?: boolean;
   scoreMessages: ScoreMessages[];
 }
 
-const Grid = ({ gridData, scoreMessages = [] }: GridPops) => (
+const Grid = ({ gridData, isBomb = false, scoreMessages = [] }: GridPops) => (
   <div className="grid-game" style={POSICION_BASE_GRID}>
     {gridData.map((row) =>
       row.map((item) => {
-        if (item.dice && item.dice.state !== DiceState.GHOST) {
+        if (item.dice && item.dice.state !== DiceState.GHOST && !isBomb) {
           return <Dice {...item.dice} key={item.index} />;
         }
 
-        return <GridItem item={item} key={item.index} />;
+        return <GridItem item={item} key={item.index} isBomb={isBomb} />;
       })
     )}
     {/* Renderizar los mensajes del score */}

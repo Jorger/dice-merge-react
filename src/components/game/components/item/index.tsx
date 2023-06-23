@@ -1,22 +1,24 @@
+import "./styles.css";
+import { Dice } from "..";
+import { DiceState } from "../../../../utils/constants";
+import { useDroppable } from "@dnd-kit/core";
 import React from "react";
 import type { GridItemType } from "../../../../interfaces";
-import { useDroppable } from "@dnd-kit/core";
-import { DiceState } from "../../../../utils/constants";
-import { Dice } from "..";
 
 interface GridItemProps {
   item: GridItemType;
+  isBomb?: boolean;
 }
 
-const GridItem = ({ item }: GridItemProps) => {
-  // isOver
-  const { setNodeRef } = useDroppable({
+const GridItem = ({ item, isBomb = false }: GridItemProps) => {
+  const { setNodeRef, isOver } = useDroppable({
     id: `${item.row}-${item.col}`,
   });
 
-  return (
+  return !isBomb || (isBomb && item.dice) ? (
     <div
       ref={setNodeRef}
+      className={`grid-item ${isOver && isBomb ? "isOver" : ""}`}
       style={{
         position: "absolute",
         width: item.size,
@@ -25,11 +27,14 @@ const GridItem = ({ item }: GridItemProps) => {
         top: item.y,
       }}
     >
-      {item.dice && item.dice.state === DiceState.GHOST && (
-        <Dice state={DiceState.GHOST} type={item.dice.type} />
+      {item.dice && (item.dice.state === DiceState.GHOST || isBomb) && (
+        <Dice
+          state={!isBomb ? DiceState.GHOST : DiceState.VISIBLE}
+          type={item.dice.type}
+        />
       )}
     </div>
-  );
+  ) : null;
 };
 
 export default React.memo(GridItem);
