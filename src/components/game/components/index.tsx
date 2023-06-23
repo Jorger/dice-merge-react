@@ -1,3 +1,4 @@
+import Bomb from "./bomb";
 import Dice from "./dice";
 import Draggable from "./draggable";
 import DragGrid from "./drag";
@@ -13,6 +14,7 @@ import ScoreCounter from "./scoreCounter";
 import ScoreMessage from "./scoreMessage";
 
 export {
+  Bomb,
   Dice,
   Draggable,
   DragGrid,

@@ -14,6 +14,7 @@ import {
   updateGameStateCache,
   updateScore,
   validateMergeDice,
+  validateSelectioBombAndStar,
   validateTrash,
   validateUndo,
 } from "./helpers";
@@ -209,7 +210,15 @@ const Game = () => {
       });
     }
 
-    console.log({ type });
+    if (type === HELPS.BOMB || type === HELPS.STAR) {
+      validateSelectioBombAndStar({
+        diceDrag,
+        helpsGame,
+        type,
+        setDiceDrag,
+        setHelpsGame,
+      });
+    }
   };
 
   return (

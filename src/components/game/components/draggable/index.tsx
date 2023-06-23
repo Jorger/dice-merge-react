@@ -1,6 +1,6 @@
 import "./styles.css";
+import { Bomb, Dice } from "..";
 import { CSS } from "@dnd-kit/utilities";
-import { Dice } from "..";
 import { DRAG_ORIENTATION } from "../../../../utils/constants";
 import { useDraggable } from "@dnd-kit/core";
 import DraggableBase from "./base";
@@ -16,21 +16,35 @@ const Draggable = ({ diceDrag, onRotate }: DraggableProps) => {
   const { attributes, isDragging, listeners, setNodeRef, transform } =
     useDraggable({ id: "drag" });
 
-  const { isVisible, typeOrientation, orientation, dices } = diceDrag;
+  const {
+    isBomb = false,
+    isStar = false,
+    isVisible = true,
+    typeOrientation,
+    orientation,
+    dices,
+  } = diceDrag;
+
+  /**
+   * Determina si hay una ayuda seleccionada (bomba o estrella)...
+   */
+  const isSpecialItem = isBomb || isStar;
 
   /**
    * Extrae la información de la orietación de los elementos
    * si es un ítem especial (bomba o estrella), siempre será cero
    * cuando no lo es depende de la cantidad de elementos, mínimo 1 máximo 2
    */
-  const dataOrientation = DRAG_ORIENTATION[typeOrientation][orientation];
+  const dataOrientation = !isSpecialItem
+    ? DRAG_ORIENTATION[typeOrientation][orientation]
+    : DRAG_ORIENTATION.SINGLE[0];
 
   useEffect(() => {
     document.body.style.cursor = isDragging ? "grabbing" : "auto";
   }, [isDragging]);
 
   const handleRotate = () => {
-    if (!isDragging && typeOrientation === "MULTIPLE") {
+    if (!isDragging && typeOrientation === "MULTIPLE" && !isSpecialItem) {
       onRotate();
     }
   };
@@ -49,6 +63,11 @@ const Draggable = ({ diceDrag, onRotate }: DraggableProps) => {
     isDragging ? "dragging" : ""
   } orientation-${orientation}`;
 
+  /**
+   * Renderizar la ayuda qu esté seleccionada...
+   */
+  const renderHelp = isSpecialItem && (isBomb ? <Bomb /> : <Dice type={8} />);
+
   return (
     <React.Fragment>
       <div
@@ -64,14 +83,16 @@ const Draggable = ({ diceDrag, onRotate }: DraggableProps) => {
         onMouseUp={handleRotate}
         onTouchCancel={handleRotate}
       >
-        {dices.map((dice, index) => (
-          <Dice
-            type={dice}
-            key={index}
-            x={dataOrientation.dice[index].x}
-            y={dataOrientation.dice[index].y}
-          />
-        ))}
+        {!isSpecialItem
+          ? dices.map((dice, index) => (
+              <Dice
+                type={dice}
+                key={index}
+                x={dataOrientation.dice[index].x}
+                y={dataOrientation.dice[index].y}
+              />
+            ))
+          : renderHelp}
       </div>
       {/* 
         Se muestra la base, sólo si 
@@ -80,7 +101,9 @@ const Draggable = ({ diceDrag, onRotate }: DraggableProps) => {
         * Seán dos dados...
         * Y no sea una ayuda (bomba o estrella)
       */}
-      {isVisible && !isDragging && dices.length === 2 && <DraggableBase />}
+      {isVisible && !isDragging && dices.length === 2 && !isSpecialItem && (
+        <DraggableBase />
+      )}
     </React.Fragment>
   );
 };
