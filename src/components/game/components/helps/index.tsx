@@ -22,9 +22,15 @@ const Helps = ({
       {Object.keys(helpsGame).map((key) => {
         const help = helpsGame[key as TypeHelps];
         const isDisabledUndo = help.type === HELPS.UNDO && totalUndo === 0;
+        const isBombSelected = help.type !== HELPS.BOMB && diceDrag.isBomb;
+        const isStarSelected = help.type !== HELPS.STAR && diceDrag.isStar;
 
         const disabled =
-          help.remaining <= 0 || !diceDrag.isVisible || isDisabledUndo;
+          help.remaining <= 0 ||
+          !diceDrag.isVisible ||
+          isDisabledUndo ||
+          isBombSelected ||
+          isStarSelected;
 
         return (
           <button

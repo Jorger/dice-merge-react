@@ -1266,3 +1266,38 @@ export const validateTrash = ({
     setDiceDrag(newDiceDrag);
   }
 };
+
+interface ValidateBomb {
+  diceDrag: DiceDrag;
+  helpsGame: HelpsGame;
+  type: TypeHelps;
+  setDiceDrag: React.Dispatch<React.SetStateAction<DiceDrag>>;
+  setHelpsGame: React.Dispatch<React.SetStateAction<HelpsGame>>;
+}
+
+/**
+ * Valida la selección de la ayuda de la bomba y la estrella...
+ * @param param0
+ */
+export const validateSelectioBombAndStar = ({
+  diceDrag,
+  helpsGame,
+  type,
+  setDiceDrag,
+  setHelpsGame,
+}: ValidateBomb) => {
+  const total = getTotalHelp(type);
+
+  if (total > 0) {
+    // Saber si estaba seleccionado...
+    const copyHelpsGame = cloneDeep(helpsGame);
+    const copyDiceDrag = cloneDeep(diceDrag);
+    const isSelected = copyHelpsGame[type].selected;
+
+    copyDiceDrag[type === HELPS.BOMB ? "isBomb" : "isStar"] = !isSelected;
+    copyHelpsGame[type].selected = !isSelected;
+
+    setDiceDrag(copyDiceDrag);
+    setHelpsGame(copyHelpsGame);
+  }
+};
