@@ -49,7 +49,11 @@ const DragGrid = ({
       }
       sensors={sensors}
     >
-      <Grid gridData={gridData} scoreMessages={scoreMessages} />
+      <Grid
+        gridData={gridData}
+        isBomb={diceDrag.isBomb || false}
+        scoreMessages={scoreMessages}
+      />
       <Draggable diceDrag={diceDrag} onRotate={onRotate} />
     </DndContext>
   );

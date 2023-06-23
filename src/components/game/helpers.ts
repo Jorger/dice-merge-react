@@ -1301,3 +1301,65 @@ export const validateSelectioBombAndStar = ({
     setHelpsGame(copyHelpsGame);
   }
 };
+
+interface ValidateRemoveDiceWithBomb {
+  diceDrag: DiceDrag;
+  gridData: GridType;
+  helpsGame: HelpsGame;
+  over: string;
+  setDiceDrag: React.Dispatch<React.SetStateAction<DiceDrag>>;
+  setGridData: React.Dispatch<React.SetStateAction<GridType>>;
+  setHelpsGame: React.Dispatch<React.SetStateAction<HelpsGame>>;
+}
+
+/**
+ * Valida la acción de eliminar un dado en la grilla con una ayuda de tipo bomba
+ * @param param0
+ */
+export const validateRemoveDiceWithBomb = ({
+  diceDrag,
+  gridData,
+  helpsGame,
+  over,
+  setDiceDrag,
+  setGridData,
+  setHelpsGame,
+}: ValidateRemoveDiceWithBomb) => {
+  const [row, col] = over.split("-").map((v) => +v);
+
+  /**
+   * Validar que el valor de las posiciones estén en rango...
+   */
+  if (isRange(row, col)) {
+    const diceRemove = gridData[row][col].dice;
+
+    // Se valida que exista un dado en la posición dada...
+    if (diceRemove) {
+      const copyDiceDrag = cloneDeep(diceDrag);
+      const copyGridData = cloneDeep(gridData);
+      const copyHelpsGame = cloneDeep(helpsGame);
+
+      // Se elimina el dado en la posición dada...
+      copyGridData[row][col].dice = undefined;
+      copyDiceDrag.isBomb = false;
+
+      copyHelpsGame.BOMB.remaining--;
+      // Se indica que ya no está seleccionada la bomba...
+      copyHelpsGame.BOMB.selected = false;
+
+      const newCacheHelps = getNewCacheHelps(copyHelpsGame);
+
+      // Guarda en localStorage...
+      saveMultiplePropierties({
+        helps: newCacheHelps,
+        timestamp: getCurrentTimeStamp(),
+      });
+
+      updateGameStateCache(copyGridData, copyDiceDrag);
+
+      setDiceDrag(copyDiceDrag);
+      setGridData(copyGridData);
+      setHelpsGame(copyHelpsGame);
+    }
+  }
+};
