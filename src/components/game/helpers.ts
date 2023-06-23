@@ -1159,8 +1159,6 @@ export const validateUndo = ({
     const lastUndo = copyUndo.pop();
 
     if (lastUndo) {
-      console.log("undo", undo);
-      console.log("lastUndo", lastUndo);
       const { grid, score, drag } = lastUndo;
       const newGrid: GridType = [];
 
@@ -1227,5 +1225,44 @@ export const validateUndo = ({
 
       updateGameStateCache(newGrid, newDiceDrag);
     }
+  }
+};
+
+interface ValidateTrash {
+  gridData: GridType;
+  helpsGame: HelpsGame;
+  setDiceDrag: React.Dispatch<React.SetStateAction<DiceDrag>>;
+  setHelpsGame: React.Dispatch<React.SetStateAction<HelpsGame>>;
+}
+
+/**
+ * Valida la selección de la ayuda de cambiar de elementos a arrastrar (trash)...
+ * @param param0
+ */
+export const validateTrash = ({
+  gridData,
+  helpsGame,
+  setDiceDrag,
+  setHelpsGame,
+}: ValidateTrash) => {
+  const totalTrash = getTotalHelp(HELPS.TRASH);
+
+  if (totalTrash > 0) {
+    const newDiceDrag = getDiceDrag(gridData);
+    const copyHelpsGame = cloneDeep(helpsGame);
+
+    copyHelpsGame.TRASH.remaining--;
+
+    const newCacheHelps = getNewCacheHelps(copyHelpsGame);
+
+    // Guarda en localStorage...
+    saveMultiplePropierties({
+      helps: newCacheHelps,
+      timestamp: getCurrentTimeStamp(),
+      drag: { dices: newDiceDrag.dices, dir: newDiceDrag.orientation },
+    });
+
+    setHelpsGame(copyHelpsGame);
+    setDiceDrag(newDiceDrag);
   }
 };
