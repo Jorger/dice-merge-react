@@ -14,6 +14,7 @@ import {
   updateGameStateCache,
   updateScore,
   validateMergeDice,
+  validateTrash,
   validateUndo,
 } from "./helpers";
 import {
@@ -181,6 +182,10 @@ const Game = () => {
     setIsGameOver(false);
   };
 
+  /**
+   * Función que ejecuta las acciones para cada ayuda...
+   * @param type
+   */
   const handleHelp = (type: TypeHelps) => {
     if (type === HELPS.UNDO) {
       validateUndo({
@@ -192,6 +197,15 @@ const Game = () => {
         setHelpsGame,
         setScore,
         setUndo,
+      });
+    }
+
+    if (type === HELPS.TRASH) {
+      validateTrash({
+        gridData,
+        helpsGame,
+        setDiceDrag,
+        setHelpsGame,
       });
     }
 
