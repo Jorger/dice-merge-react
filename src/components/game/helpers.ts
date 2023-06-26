@@ -1,3 +1,4 @@
+import { TypeIcon } from "../icon";
 import {
   DEFAULT_SCORE_CACHE,
   DICES_VALUES,
@@ -15,6 +16,18 @@ import {
   SIZE_ITEM,
   TYPES_HELPS,
 } from "../../utils/constants";
+import {
+  deleteProperty,
+  getValueFromCache,
+  saveMultiplePropierties,
+  savePropierties,
+} from "../../utils/storage";
+import {
+  getCurrentTimeStamp,
+  isValidTimeStamp,
+  randomNumber,
+} from "../../utils/helpers";
+import cloneDeep from "lodash.clonedeep";
 import type {
   CachedScore,
   DiceDrag,
@@ -33,19 +46,6 @@ import type {
   TypeOrientation,
   UndoValues,
 } from "../../interfaces";
-import {
-  getCurrentTimeStamp,
-  isValidTimeStamp,
-  randomNumber,
-} from "../../utils/helpers";
-import cloneDeep from "lodash.clonedeep";
-import {
-  deleteProperty,
-  getValueFromCache,
-  saveMultiplePropierties,
-  savePropierties,
-} from "../../utils/storage";
-import { TypeIcon } from "../icon";
 
 /**
  * Función que devuelve cuantos slots están disponibles...
@@ -231,8 +231,6 @@ const validatePositionDices = (
 
     // Se obtiene los vecinos...
     const neighbors = getNeighbors(gridData, diceOneRow, diceOneCol);
-
-    // console.log("neighbors", neighbors);
 
     // Se valida si existe el vecino y que además no exista un dado esa posición...
     if (neighbors[positionNeighbor] && !neighbors[positionNeighbor].dice) {
@@ -796,8 +794,6 @@ export const putDiceOnGrid = ({
   if (updateGrid) {
     setGridData(copyGridData);
   }
-
-  // console.log({ typeEvent, over });
 };
 
 interface ValidateMergeDice {
@@ -819,8 +815,6 @@ export const validateMergeDice = ({
   let nextLevel = false;
   let existsMerge = false;
 
-  // console.log("diceDrag", diceDrag.dropDices);
-
   if (copyDiceDrag?.dropDices) {
     /**
      * Se debe trae los que se unen,
@@ -829,8 +823,6 @@ export const validateMergeDice = ({
      * de menor a mayor, de esta manera simpre se evalúa el valor menor
      */
     const diceSorted = copyDiceDrag.dropDices.sort((a, b) => a.type - b.type);
-
-    // console.log("diceSorted", diceSorted);
 
     // Se iteran los dados puestos en el board, mínimo uno, máximo dos...
     for (let i = 0; i < diceSorted.length; i++) {
@@ -854,7 +846,6 @@ export const validateMergeDice = ({
         if (isStar) {
           // Se traen los vecinos...
           const neighborsStar = getNeighbors(copyGridData, diceRow, diceCol);
-          console.log("neighborsStar", neighborsStar);
           // Buscar los valores de los vecinos posibles...
           const possibleDiceValues = Object.keys(neighborsStar)
             .filter((v) => neighborsStar[v].dice)
@@ -891,8 +882,6 @@ export const validateMergeDice = ({
             typeDice
           );
         }
-
-        // console.log({ typeDice }, "neighborsMerge", neighborsMerge);
 
         if (neighborsMerge.length >= MIN_VALUE_MERGE - 1) {
           // Se debe mutar la grilla...

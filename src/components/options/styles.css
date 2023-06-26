@@ -1,0 +1,124 @@
+.options-game {
+  align-items: center;
+  background: rgb(0 0 0 / 85%);
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 20;
+}
+
+.options-game-container {
+  animation: fadeInLeft 400ms ease both;
+  width: 80%;
+  background-color: #312938;
+  border-radius: 5px;
+  padding-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+}
+
+.options-game-header {
+  align-items: center;
+  background-color: #4d4658;
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+  color: white;
+  display: flex;
+  font-size: 25px;
+  font-weight: bold;
+  justify-content: center;
+  padding: 18px;
+  position: relative;
+  width: 100%;
+}
+
+.options-game-close {
+  align-items: center;
+  background-color: #a7051d;
+  border-radius: 5px;
+  display: flex;
+  height: 35px;
+  justify-content: center;
+  position: absolute;
+  right: 10px;
+  width: 35px;
+}
+
+.options-game-close .icon-wrapper {
+  height: 60%;
+  transform: translateY(-2px);
+  width: 60%;
+}
+
+.options-game-close:active .icon-wrapper {
+  transform: translateY(0);
+}
+
+.options-game-options {
+  padding: 20px;
+  width: 100%;
+}
+
+.options-game-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #8c8792;
+}
+
+.options-game-option:not(:first-child) {
+  margin-top: 20px;
+}
+
+.options-game-option .icon-wrapper {
+  width: 40px;
+  height: 40px;
+}
+
+.options-game-option-label {
+  color: white;
+  font-size: 30px;
+  font-weight: bold;
+  margin: 0 15px;
+  text-transform: capitalize;
+  width: 60%;
+}
+
+.options-game-buttons {
+  display: flex;
+  width: 90%;
+}
+
+.options-game-button {
+  align-items: center;
+  display: flex;
+  height: 60px;
+  padding: 0 10px;
+  width: 50%;
+}
+
+.options-game-button:not(:last-child) {
+  margin-right: 15px;
+}
+
+.options-game-button .icon-wrapper {
+  width: 25%;
+}
+
+.options-game-button span {
+  color: white;
+  display: block;
+  font-size: 20px;
+  font-weight: bold;
+  width: 100%;
+}

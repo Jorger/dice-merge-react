@@ -1,4 +1,5 @@
 import "./styles.css";
+import { SoundProvider } from "../../context/SoundContext";
 import { useWindowResize } from "../../hooks";
 import React from "react";
 
@@ -10,9 +11,11 @@ const AppWrapper = ({
   useWindowResize();
 
   return (
-    <div className="container">
-      <div className="screen">{children}</div>
-    </div>
+    <SoundProvider>
+      <div className="container">
+        <div className="screen">{children}</div>
+      </div>
+    </SoundProvider>
   );
 };
 
