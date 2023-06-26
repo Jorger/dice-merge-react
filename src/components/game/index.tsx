@@ -1,4 +1,6 @@
 import { delay } from "../../utils/helpers";
+import { DragEvents, HELPS } from "../../utils/constants";
+import { useSoundContext } from "../../context/SoundContext";
 import {
   clearGrid,
   clearNewScoreMessages,
@@ -36,11 +38,11 @@ import {
   NextLevel,
   Progress,
 } from "./components";
+import Options from "../options";
 import React, { useEffect, useState } from "react";
-import { DragEvents, HELPS } from "../../utils/constants";
 
 const Game = () => {
-  // setGridData
+  const { playSound } = useSoundContext();
   /**
    * Guarda la información de la grilla...
    */
@@ -81,6 +83,11 @@ const Game = () => {
    */
   const [undo, setUndo] = useState<UndoValues[]>([]);
 
+  /**
+   * Para mostrar las opciones del juego...
+   */
+  const [showOptions, setShowOptions] = useState(false);
+
   useEffect(() => {
     if (!diceDrag.isVisible) {
       const runAsync = async () => {
@@ -97,7 +104,6 @@ const Game = () => {
           score,
         });
 
-        // console.log("newScoreMessage", newScoreMessage);
         await delay(existsMerge ? 300 : 100);
 
         if (!existsMerge) {
@@ -109,6 +115,7 @@ const Game = () => {
           } = clearGrid(gridData);
 
           if (isLastDiceMerge) {
+            playSound("final");
             await delay(500);
           }
 
@@ -145,17 +152,17 @@ const Game = () => {
 
           setGridData(copyGridData);
           setDiceDrag(copyDiceDrag);
+          playSound("merge");
         }
-
-        // console.log("un segundo después");
       };
 
       runAsync();
     }
-  }, [diceDrag, gridData, score]);
+  }, [diceDrag, gridData, playSound, score]);
 
   const handleRotate = () => {
     setDiceDrag(rotateDiceDrag(diceDrag));
+    playSound("rotate");
   };
 
   /**
@@ -201,6 +208,8 @@ const Game = () => {
     setDiceDrag(getDiceDrag(newGridData));
     setScore(getInitialScore());
     setIsGameOver(false);
+    setShowOptions(false);
+    setUndo([]);
   };
 
   /**
@@ -243,6 +252,12 @@ const Game = () => {
 
   return (
     <GameWrapper>
+      {showOptions && (
+        <Options
+          handleClose={() => setShowOptions(false)}
+          handleRestart={handleRestart}
+        />
+      )}
       {showNextLevel && (
         <NextLevel
           level={score.progress.level}
@@ -252,10 +267,7 @@ const Game = () => {
       {isGameOver && (
         <GameOver {...score.score} handleRestart={handleRestart} />
       )}
-      <Header
-        {...score.score}
-        handleOptions={() => console.log("MOSTRAR OPCIONES")}
-      />
+      <Header {...score.score} handleOptions={() => setShowOptions(true)} />
       <Progress {...score.progress} />
       <Helps
         diceDrag={diceDrag}
