@@ -195,7 +195,7 @@ const validatePositionDices = (
   diceOneRow: number,
   diceOneCol: number
 ) => {
-  const { dices, typeOrientation, orientation } = diceDrag;
+  const { dices, typeOrientation, orientation, isStar } = diceDrag;
   const renderDices: RenderDices[] = [];
 
   /**
@@ -203,7 +203,7 @@ const validatePositionDices = (
    * ya que si existió el over es que estaba libre,
    * pero so es MULTIPLE se debe evaluar el dado dos y su posición.
    */
-  let setDiceOnGrid = typeOrientation === "SINGLE";
+  let setDiceOnGrid = typeOrientation === "SINGLE" || isStar;
 
   // Para indicar el valor del dado uno por defecto
   // Si es uno sólo, por efecto será la posición cero...
@@ -216,7 +216,7 @@ const validatePositionDices = (
 
   // Se almacena la información del dado uno...
   renderDices.push({
-    type: dices[diceOneIndex],
+    type: !isStar ? dices[diceOneIndex] : 8,
     x: gridData[diceOneRow][diceOneCol].x,
     y: gridData[diceOneRow][diceOneCol].y,
     row: diceOneRow,
@@ -224,7 +224,7 @@ const validatePositionDices = (
   });
 
   // Es de tipo múltiple así que se debe evaluar el dado dos...
-  if (typeOrientation === "MULTIPLE") {
+  if (typeOrientation === "MULTIPLE" && !isStar) {
     // Dependiendo de la orietación se valida al posición que se debe evaluar del vecino...
     const positionNeighbor =
       orientation === 0 || orientation === 2 ? "BOTTOM" : "LEFT";
@@ -315,7 +315,7 @@ const validateNeighborsMerge = (
      * No se había evaluado antes.
      * Exista un dado y el estado del mismo sea de tipo VISIBLE.
      * Además que el dado sea del mismo tipo
-     * TODO: ó que sea de tipo especial (8) Dado estrella...
+     * ó que sea de tipo especial (8) Dado estrella...
      * Los valores de los indices evaluados anteriormete
      * no se encuentre en validatedIndexes
      */
@@ -323,7 +323,7 @@ const validateNeighborsMerge = (
       !existNeighbor &&
       diceNeighbor &&
       diceNeighbor.state === DiceState.VISIBLE &&
-      diceNeighbor.type === type &&
+      (diceNeighbor.type === type || diceNeighbor.type === 8) &&
       !validatedIndexes.includes(indexNeighbor)
     ) {
       // debugger;
@@ -643,6 +643,7 @@ export const putDiceOnGrid = ({
   undo = [],
   setDiceDrag,
   setGridData,
+  setHelpsGame,
   setUndo,
 }: PutDiceOnGrid) => {
   const copyGridData = cloneDeep(gridData);
@@ -685,8 +686,7 @@ export const putDiceOnGrid = ({
     if (dices.length !== 0) {
       // Se itera los dados que se han puesto en la grilla...
       for (let { row, col, type } of dices) {
-        // TODO: Se validará el dado estrella...
-        const typeDice = type;
+        const typeDice = !diceDrag.isStar ? type : 8;
 
         // Si la acción es que se ha puesto el dado en la grilla
         // el tipo del dado será visible, si no será ghost...
@@ -732,10 +732,30 @@ export const putDiceOnGrid = ({
       }
 
       if (typeEvent === DragEvents.END) {
-        // console.log("EVALUAR END");
+        // Tenía una estrella seleccionada
+        // por lo tanto, se debe indicar que se ha utilizado...
+        // y se debe disminuir su valor...
+        if (diceDrag.isStar) {
+          const copyHelpsGame = cloneDeep(helpsGame);
+          copyHelpsGame.STAR.remaining--;
+          copyHelpsGame.STAR.selected = false;
+          setHelpsGame(copyHelpsGame);
 
+          // Guarda en localStorage...
+          saveMultiplePropierties({
+            helps: getNewCacheHelps(copyHelpsGame),
+            timestamp: getCurrentTimeStamp(),
+          });
+        }
+
+        /**
+         * Se establece que drag no es visible, además se almacena
+         * los dados que se han puesto, para de esta forma poderlos usar
+         * depués en la evaluación de merge...
+         */
         const copyDiceDrag = cloneDeep(diceDrag);
         copyDiceDrag.isVisible = false;
+        copyDiceDrag.isStar = false;
         copyDiceDrag.dropDices = dices;
         setDiceDrag(copyDiceDrag);
 
@@ -821,18 +841,56 @@ export const validateMergeDice = ({
         type >= MIN_VALUE_DICE &&
         type <= MAX_VALUE_DICE
       ) {
-        // console.log("diceSorted", i, diceSorted[i]);
-        // TODO: Validar el dado tipo estrella...
         let typeDice = type;
+
+        // Saber si el tipo de dado es una ayuda de tipo estrella...
+        const isStar = type === 8;
+
+        let neighborsMerge: NeighborsMerge[] = [];
+
         /**
-         * Se trae los posibles elementos para hacer merge
+         * Si es de tipo espcial se buscan los vecinos
          */
-        const neighborsMerge = validateNeighborsMerge(
-          copyGridData,
-          diceRow,
-          diceCol,
-          typeDice
-        );
+        if (isStar) {
+          // Se traen los vecinos...
+          const neighborsStar = getNeighbors(copyGridData, diceRow, diceCol);
+          console.log("neighborsStar", neighborsStar);
+          // Buscar los valores de los vecinos posibles...
+          const possibleDiceValues = Object.keys(neighborsStar)
+            .filter((v) => neighborsStar[v].dice)
+            .map((v) => neighborsStar[v].dice?.type)
+            .sort();
+
+          // Se itera los valore de cada uno de los vecinos posibles...
+          for (let possibleDice of possibleDiceValues) {
+            // Se trae la información de posibles merges...
+            const possibleMerge = validateNeighborsMerge(
+              copyGridData,
+              diceRow,
+              diceCol,
+              possibleDice as TypeDice
+            );
+
+            // Validar si cumple la validación mínima de merge...
+            if (possibleMerge.length >= MIN_VALUE_MERGE - 1) {
+              // Si la cumple se establece el valor del dado por el cual se debe evaluar
+              typeDice = possibleDice as TypeDice;
+              // Y se estableve este valor de los vecinos que se deben unir...
+              neighborsMerge = possibleMerge;
+              break;
+            }
+          }
+        } else {
+          /**
+           * Se trae los posibles elementos para hacer merge
+           */
+          neighborsMerge = validateNeighborsMerge(
+            copyGridData,
+            diceRow,
+            diceCol,
+            typeDice
+          );
+        }
 
         // console.log({ typeDice }, "neighborsMerge", neighborsMerge);
 
@@ -854,16 +912,21 @@ export const validateMergeDice = ({
               diceSorted[i].y;
           }
 
-          // TODO: Evaluar el dado tipo estrella...
-          if (typeDice + 1 <= 7) {
-            // TODO: Evaluar el dado tipo estrella...
-            const newDiceType = (typeDice + 1) as TypeDice;
+          if (typeDice + 1 <= 7 || typeDice === 8) {
+            /**
+             * Se establece el nuevo valor del dado,
+             * Si el merge es de un dado especial, se indica que el nuevo valor
+             * del dado será de dos...
+             */
+            const newDiceType =
+              typeDice === 8 ? 2 : ((typeDice + 1) as TypeDice);
             // Se le establece una clase para que se muestre
             copyGridData[diceRow][diceCol].dice.state = DiceState.APPEAR;
             // Se incrementa el valor evaluado...
             copyGridData[diceRow][diceCol].dice.type = newDiceType;
-            // TODO: Evaluar el dado tipo estrella...
-            const originalTypeDice: TypeDice = typeDice;
+            // El valor original que tenía el dado...
+            // útil para calcular el score...
+            const originalTypeDice: TypeDice = typeDice === 8 ? 1 : typeDice;
 
             newScoreMessage.value =
               originalTypeDice *
@@ -878,8 +941,12 @@ export const validateMergeDice = ({
             // Se incrementa el total de merges que se han lanzado en el mismo lanzamiento...
             copyDiceDrag.totalMerges++;
           } else {
+            /**
+             * Si el valor es mayor que 7, quiere decie que se debe eliminar,
+             * ya que se ha hecho todos los merge posible...
+             */
             copyGridData[diceRow][diceCol].dice.state = DiceState.DISAPEAR;
-            // TODO: validar el score...
+            // El valor a entregar es de 100
             newScoreMessage.value = SCORE_DICE_ALL;
           }
 
