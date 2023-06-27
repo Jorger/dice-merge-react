@@ -1,0 +1,49 @@
+.progress-lobby {
+  --p-width: 110px;
+}
+
+.progress-lobby {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  width: var(--p-width);
+}
+
+.progress-lobby-level {
+  align-items: center;
+  background-color: #ad27ea;
+  border-radius: 7px;
+  border: 2px solid black;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.3) 0px -3px 0px inset;
+  color: white;
+  display: flex;
+  font-size: 20px;
+  font-weight: bold;
+  height: 40px;
+  justify-content: center;
+  padding-bottom: 2px;
+  text-shadow: 1px 1px black;
+  width: 40px;
+  z-index: 1;
+}
+
+.progress-lobby-progress {
+  background-color: #2b4707;
+  border-radius: 0 20px 20px 0;
+  border: 3px solid #2b4707;
+  border-left: none;
+  height: 25px;
+  overflow: hidden;
+  position: relative;
+  width: calc(var(--p-width) - 40px);
+}
+
+.progress-lobby-value {
+  background-color: #28d5d9;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+}

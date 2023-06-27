@@ -1,4 +1,5 @@
 import "./styles.css";
+import { Link } from "react-router-dom";
 import { ScoreCounter } from "..";
 import Icon from "../../../icon";
 import React from "react";
@@ -37,9 +38,9 @@ const Header = ({
 }: HeaderProps) => (
   <div className="header-game">
     <div className="header-game-wrapper">
-      <button className="button blue header-game-buttons" title="Back">
+      <Link className="button blue header-game-buttons" title="Back" to="/">
         <Icon type="back" fill="white" />
-      </button>
+      </Link>
       <div className="header-game-scores">
         <RenderScore label="Best" value={best} animate={animate} />
         <RenderScore label="Score" value={score} animate={animate} />
