@@ -1,0 +1,26 @@
+.modal-share-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.modal-share-button {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 25%;
+}
+
+.modal-share-button button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  height: 40px;
+  margin-bottom: 5px;
+  width: 40px;
+}
+
+.modal-share-button span {
+  font-size: 13px;
+}
