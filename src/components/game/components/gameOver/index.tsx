@@ -1,5 +1,6 @@
 import "./styles.css";
 import { ScoreCounter } from "..";
+import { useNavigate } from "react-router-dom";
 import FocusTrap from "focus-trap-react";
 import Icon from "../../../icon";
 import React from "react";
@@ -33,6 +34,8 @@ interface GameOverProps {
 }
 
 const GameOver = ({ score = 0, best = 0, handleRestart }: GameOverProps) => {
+  const naviate = useNavigate();
+
   return (
     <FocusTrap focusTrapOptions={{ escapeDeactivates: false }}>
       <div className="game-over-wrapper">
@@ -43,7 +46,10 @@ const GameOver = ({ score = 0, best = 0, handleRestart }: GameOverProps) => {
             <RenderValues label="Best" value={best} animate={score >= best} />
           </div>
           <div className="game-over-buttons">
-            <button className="button blue game-over-button">
+            <button
+              className="button blue game-over-button"
+              onClick={() => naviate("/")}
+            >
               <Icon type="home" fill="white" />
               <span>Home</span>
             </button>

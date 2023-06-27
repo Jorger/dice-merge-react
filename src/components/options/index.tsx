@@ -1,10 +1,11 @@
 import "./styles.css";
+import { SoundsType } from "../../interfaces";
+import { useNavigate } from "react-router-dom";
 import { useSoundContext } from "../../context/SoundContext";
 import FocusTrap from "focus-trap-react";
 import Icon, { TypeIcon } from "../icon";
 import React from "react";
 import Switch from "react-switch";
-import { SoundsType } from "../../interfaces";
 
 interface RenderOptionProps {
   label: string;
@@ -46,6 +47,7 @@ interface OptionsProps {
 
 const Options = ({ handleClose, handleRestart }: OptionsProps) => {
   const { soundEnabled, toggleSound } = useSoundContext();
+  const navigate = useNavigate();
 
   return (
     <FocusTrap focusTrapOptions={{ escapeDeactivates: false }}>
@@ -74,7 +76,10 @@ const Options = ({ handleClose, handleRestart }: OptionsProps) => {
           </div>
           {handleRestart && (
             <div className="options-game-buttons">
-              <button className="button blue options-game-button">
+              <button
+                className="button blue options-game-button"
+                onClick={() => navigate("/")}
+              >
                 <Icon type="home" fill="white" />
                 <span>Home</span>
               </button>

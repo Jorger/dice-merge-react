@@ -71,3 +71,11 @@ export const isValidTimeStamp = (value: string | number) => {
     return false;
   }
 };
+
+/**
+ * Copiar un texto en el portapapeles...
+ * @param {*} text
+ */
+export const copyToClipboard = (text: string = "") => {
+  navigator.clipboard.writeText(text);
+};
