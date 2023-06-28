@@ -20,6 +20,11 @@ export const shareLink = (data: ShareData) => {
     .share(data)
     .then((_) => successMessage())
     .catch(() => {
-      console.log("error");
+      swal({
+        title: "Error",
+        text: "Sharing failed :(",
+        closeOnEsc: false,
+        icon: "error",
+      });
     });
 };
