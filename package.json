@@ -42,7 +42,8 @@
     "build": "GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "npm run build && vercel --prod"
+    "deploy": "npm run build && vercel --prod",
+    "serve": "npm run build && serve -s build -l 4010"
   },
   "eslintConfig": {
     "extends": [
@@ -63,8 +64,10 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/howler": "^2.2.7",
     "@types/lodash.clonedeep": "^4.5.7",
+    "serve": "^14.2.0",
     "vercel": "^30.2.1"
   }
 }
