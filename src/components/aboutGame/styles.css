@@ -1,0 +1,78 @@
+.about-game {
+  align-items: center;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  width: 80%;
+}
+
+.about-game .logo-game {
+  margin-bottom: 30px;
+}
+
+.about-game p {
+  color: white;
+  font-size: 18px;
+  margin: 10px 0;
+  text-align: justify;
+}
+
+.about-game h2 {
+  color: white;
+  font-size: 30px;
+}
+
+.about-game a,
+.about-game a:visited {
+  color: white;
+  font-weight: bold;
+}
+
+.about-game-social {
+  align-items: center;
+  animation: bounceIn 1s both;
+  display: flex;
+  justify-content: space-around;
+  margin-top: 30px;
+  width: 100%;
+}
+
+.about-game-social-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+}
+
+.about-game-social-link .icon-wrapper {
+  height: 60%;
+  width: 60%;
+}
+
+.about-game-social-link svg {
+  filter: drop-shadow(0 2px 1px black);
+}
+
+.about-game-back {
+  align-items: center;
+  display: flex;
+  height: 50px;
+  justify-content: center;
+  left: 20px;
+  position: absolute;
+  top: 20px;
+  width: 50px;
+}
+
+.about-game-back .icon-wrapper {
+  height: 70%;
+  transform: translateY(-2px);
+  width: 70%;
+}
+
+.about-game-back:active .icon-wrapper {
+  transform: translateY(0);
+}
