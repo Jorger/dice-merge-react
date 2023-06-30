@@ -7,7 +7,7 @@ En este adictivo juego, tu objetivo es colocar dados en una cuadrícula de 5x5 y
 
 ![cover_course_dice_02](https://github.com/Jorger/dice-merge-react/assets/30050/dd7cc77e-3c57-493a-b2ba-f8605d45e997)
 
-He preparado un curso en Udemy donde te enseño a desarrollar este juego:
+He preparado el curso [ReactJS Game Dev: Crea el Adictivo Juego Dice Merge](https://www.udemy.com/course/reactjs-game-dev-crea-el-adictivo-juego-dice-merge/?referralCode=1083A2DE8A65C6FD4D68), donde te enseño como desarrollar este juego 💪
 
 # 🎮 URL del juego.
 
